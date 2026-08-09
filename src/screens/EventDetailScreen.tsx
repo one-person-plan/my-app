@@ -73,7 +73,7 @@ export function EventDetailScreen({
     });
 
   const submitQuestion = () => {
-    if (!qText.trim()) return;
+    if (!qText.trim() && !qImage) return;
     addQuestion(ev.id, qText.trim(), qImage);
     setQText('');
     setQImage(undefined);
@@ -282,7 +282,7 @@ export function EventDetailScreen({
             <GhostButton className="flex-1" onClick={() => setQSheet(false)}>
               キャンセル
             </GhostButton>
-            <PrimaryButton className="flex-[2]" onClick={submitQuestion} disabled={!qText.trim()}>
+            <PrimaryButton className="flex-[2]" onClick={submitQuestion} disabled={!qText.trim() && !qImage}>
               追加する
             </PrimaryButton>
           </div>
@@ -314,7 +314,6 @@ export function EventDetailScreen({
                 <input
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   className="hidden"
                   onChange={(e) => e.target.files?.[0] && onPickImage(e.target.files[0])}
                 />
