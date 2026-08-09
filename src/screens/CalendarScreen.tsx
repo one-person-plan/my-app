@@ -89,7 +89,8 @@ export function CalendarScreen({ onOpenEvent }: { onOpenEvent: (id: string) => v
 
   // form
   const [name, setName] = useState('');
-  const [time, setTime] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [hashtag, setHashtag] = useState('');
 
   const eventDates = useMemo(() => new Set(events.map((e) => e.date)), [events]);
@@ -112,7 +113,8 @@ export function CalendarScreen({ onOpenEvent }: { onOpenEvent: (id: string) => v
     setSelected(iso);
     setSheetOpen(true);
     setName('');
-    setTime('');
+    setStartTime('');
+    setEndTime('');
     setHashtag('');
   };
 
@@ -121,7 +123,7 @@ export function CalendarScreen({ onOpenEvent }: { onOpenEvent: (id: string) => v
     addEvent({
       name: name.trim(),
       date: selected,
-      time: time.trim() || undefined,
+      time: startTime && endTime ? '${startTime}~${endTime}' : undefined,
       hashtag: hashtag.trim() ? (hashtag.trim().startsWith('#') ? hashtag.trim() : `#${hashtag.trim()}`) : undefined,
     });
     setSheetOpen(false);
@@ -252,13 +254,31 @@ export function CalendarScreen({ onOpenEvent }: { onOpenEvent: (id: string) => v
             onChange={(e) => setName(e.target.value)}
             autoFocus
           />
-          <TextField
-            label="時間"
-            placeholder="例：18:00〜22:00"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            hint="※任意。予定の時間帯をメモ"
-          />
+          <div className="space-y-3">
+  <p className="text-sm font-bold text-ink">時間</p>
+
+  <div className="flex items-center gap-3">
+    <TextField
+      label="開始"
+      type="time"
+      value={startTime}
+      onChange={(e) => setStartTime(e.target.value)}
+    />
+
+    <span className="text-muted font-bold pt-6">〜</span>
+
+    <TextField
+      label="終了"
+      type="time"
+      value={endTime}
+      onChange={(e) => setEndTime(e.target.value)}
+    />
+  </div>
+
+  <p className="text-[11px] text-faint">
+    ※任意。設定しない場合は空欄のままでOK
+  </p>
+</div>
           <TextField
             label="ハッシュタグ"
             placeholder="例：#月イチ大喜利"
