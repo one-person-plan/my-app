@@ -123,7 +123,7 @@ export function CalendarScreen({ onOpenEvent }: { onOpenEvent: (id: string) => v
     addEvent({
       name: name.trim(),
       date: selected,
-      time: startTime && endTime ? '${startTime}~${endTime}' : undefined,
+      time: startTime && endTime ? `${startTime}~${endTime}` : undefined,
       hashtag: hashtag.trim() ? (hashtag.trim().startsWith('#') ? hashtag.trim() : `#${hashtag.trim()}`) : undefined,
     });
     setSheetOpen(false);
