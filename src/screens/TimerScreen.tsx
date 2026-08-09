@@ -137,6 +137,17 @@ function EventTopicItem({
   );
 }
 
+function getAnswerLabel(number: number) {
+  const circled = [
+    '①', '②', '③', '④', '⑤',
+    '⑥', '⑦', '⑧', '⑨', '⑩',
+    '⑪', '⑫', '⑬', '⑭', '⑮',
+    '⑯', '⑰', '⑱', '⑲', '⑳',
+  ];
+
+  return circled[number - 1] ?? `${number}`;
+}
+
 export function TimerScreen() {
   const { events, addAnswer } = useApp();
   const [minutes, setMinutes] = useState(1);
@@ -147,7 +158,6 @@ export function TimerScreen() {
   const [finished, setFinished] = useState(false);
   const [answerText, setAnswerText] = useState('');
   const [timerEnabled, setTimerEnabled] = useState(false);
-  const [answerCount, setAnswerCount] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
   const total = minutes * 60 + seconds;
@@ -176,17 +186,24 @@ export function TimerScreen() {
     const event = events.find((e) =>
       e.questions.some((q) => q.id === selectedQuestion.id)
     );
-  
+    
     if (!event) return;
-  
+    
+    const question = event.questions.find(
+      (q) => q.id === selectedQuestion.id
+    );
+    
+    if (!question) return;
+    
+    const nextNumber = question.answers.length + 1;
+    
     addAnswer(event.id, selectedQuestion.id, {
-      answerer: `こたえる${answerCount + 1}`,
+      answerer: `こたえる${getAnswerLabel(nextNumber)}`,
       text: answerText.trim(),
       impression: '',
     });
   
     setAnswerText('');
-    setAnswerCount((count) => count + 1);
   
     if (timerEnabled) {
       reset();
