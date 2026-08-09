@@ -138,13 +138,16 @@ function EventTopicItem({
 }
 
 export function TimerScreen() {
-  const { events } = useApp();
+  const { events, addAnswer } = useApp();
   const [minutes, setMinutes] = useState(1);
   const [seconds, setSeconds] = useState(0);
   const [remaining, setRemaining] = useState(0);
   const [running, setRunning] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<OogiriQuestion | undefined>();
   const [finished, setFinished] = useState(false);
+  const [answerText, setAnswerText] = useState('');
+  const [timerEnabled, setTimerEnabled] = useState(false);
+  const [answerCount, setAnswerCount] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
   const total = minutes * 60 + seconds;
@@ -166,6 +169,29 @@ export function TimerScreen() {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
     };
   }, [running]);
+
+  const submitAnswer = () => {
+    if (!selectedQuestion || !answerText.trim()) return;
+  
+    const event = events.find((e) =>
+      e.questions.some((q) => q.id === selectedQuestion.id)
+    );
+  
+    if (!event) return;
+  
+    addAnswer(event.id, selectedQuestion.id, {
+      answerer: `こたえる${answerCount + 1}`,
+      text: answerText.trim(),
+      impression: '',
+    });
+  
+    setAnswerText('');
+    setAnswerCount((count) => count + 1);
+  
+    if (timerEnabled) {
+      reset();
+    }
+  };
 
   const start = () => {
     if (total <= 0) return;
@@ -230,7 +256,43 @@ export function TimerScreen() {
           </div>
         </section>
 
-        {/* timer */}
+        {/* answer */}
+        <section className="bg-surface rounded-3xl p-5 border border-border shadow-sm">
+         <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-xl bg-surface-2 flex items-center justify-center text-primary">
+            <MessageCircle size={15} strokeWidth={2.5} />
+          </div>
+          <h2 className="font-display font-extrabold text-base text-ink tracking-tight">回答する</h2>
+        </div>
+        <div className="flex items-center justify-between mb-3">
+         <span className="text-xs font-bold text-muted">練習タイマー</span>
+         <button
+          type="button"
+          onClick={() => setTimerEnabled((v) => !v)}
+          disabled={!selectedQuestion}
+          className="relative w-12 h-7 rounded-full transition bg-border"
+        >
+          <span className="absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition left-1" />
+        </button>
+      </div>
+        <textarea
+          value={answerText}
+          onChange={(e) => setAnswerText(e.target.value)}
+          disabled={!selectedQuestion}
+          placeholder={selectedQuestion ? 'ここに回答を入力' : '先にお題を選んでください'}
+          rows={4}
+          className="w-full rounded-2xl border border-border bg-surface-2 p-3.5 text-sm text-ink placeholder:text-faint resize-none outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </section>
+      <button
+       type="button"
+       onClick={submitAnswer}
+       disabled={!selectedQuestion || !answerText.trim()}
+       className="w-full h-12 mt-3 rounded-2xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition"
+        >
+        回答を保存する
+      </button>
+      {timerEnabled && (
         <section className="bg-surface rounded-3xl p-5 border border-border shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-xl bg-surface-2 flex items-center justify-center text-primary">
@@ -295,6 +357,7 @@ export function TimerScreen() {
             {selectedQuestion ? 'お題を選択中 — 終了で自動停止' : 'お題を選ぶと集中しやすいよ'}
           </p>
         </section>
+      )}
       </div>
     </div>
   );
