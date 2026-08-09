@@ -34,12 +34,18 @@ export function EventDetailScreen({
   eventId: string;
   onBack: () => void;
 }) {
-  const { events, addQuestion, deleteQuestion, addAnswer, deleteAnswer, deleteEvent, toggleFavorite } = useApp();
+  const { events, addQuestion, deleteQuestion, addAnswer, deleteAnswer, deleteEvent, toggleFavorite, updateEvent, } = useApp();
   const ev = events.find((e) => e.id === eventId);
 
   const [qSheet, setQSheet] = useState(false);
   const [qText, setQText] = useState('');
   const [qImage, setQImage] = useState<string | undefined>();
+  const [editSheet, setEditSheet] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editStartTime, setEditStartTime] = useState('');
+  const [editEndTime, setEditEndTime] = useState('');
+  const [editHashtag, setEditHashtag] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [answerSheet, setAnswerSheet] = useState<string | null>(null); // questionId
   const [ans, setAns] = useState({ answerer: '', text: '', impression: '' });
@@ -71,7 +77,36 @@ export function EventDetailScreen({
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-
+    const openEditSheet = () => {
+      const [start = '', end = ''] = ev.time?.split('〜') ?? [];
+    
+      setEditName(ev.name);
+      setEditDate(ev.date);
+      setEditStartTime(start);
+      setEditEndTime(end);
+      setEditHashtag(ev.hashtag ?? '');
+      setEditSheet(true);
+    };
+    
+    const submitEdit = () => {
+      if (!editName.trim()) return;
+    
+      updateEvent(ev.id, {
+        name: editName.trim(),
+        date: editDate,
+        time:
+          editStartTime && editEndTime
+            ? `${editStartTime}〜${editEndTime}`
+            : undefined,
+        hashtag: editHashtag.trim()
+          ? editHashtag.trim().startsWith('#')
+            ? editHashtag.trim()
+            : `#${editHashtag.trim()}`
+          : undefined,
+      });
+    
+      setEditSheet(false);
+    };
   const submitQuestion = () => {
     if (!qText.trim() && !qImage) return;
     addQuestion(ev.id, qText.trim(), qImage);
@@ -111,8 +146,14 @@ export function EventDetailScreen({
           <p className="text-[11px] text-faint font-medium">{fmtDate(ev.date)}</p>
         </div>
         <button
+          onClick={openEditSheet}
+          className="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-ink hover:text-primary active:scale-90 transition"
+        >
+          <Pencil size={16} />
+        </button>
+        <button
           onClick={() => setConfirm({ type: 'event', id: ev.id })}
-          className="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-faint hover:text-error active:scale-90 transition"
+          className="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-error hover:text-error active:scale-90 transition"
         >
           <Trash2 size={16} />
         </button>
@@ -271,6 +312,72 @@ export function EventDetailScreen({
           )}
         </div>
       </div>
+
+{/* edit event sheet */}
+<BottomSheet
+  open={editSheet}
+  onClose={() => setEditSheet(false)}
+  title="イベントを編集"
+  footer={
+    <div className="flex gap-3">
+      <GhostButton className="flex-1" onClick={() => setEditSheet(false)}>
+        キャンセル
+      </GhostButton>
+      <PrimaryButton
+        className="flex-[2]"
+        onClick={submitEdit}
+        disabled={!editName.trim()}
+      >
+        保存する
+      </PrimaryButton>
+    </div>
+  }
+>
+  <div className="space-y-4 pt-2">
+    <TextField
+      label="会名"
+      placeholder="例：月イチ大喜利会"
+      value={editName}
+      onChange={(e) => setEditName(e.target.value)}
+    />
+
+    <TextField
+      label="日付"
+      type="date"
+      value={editDate}
+      onChange={(e) => setEditDate(e.target.value)}
+    />
+
+    <div>
+      <span className="block text-xs font-bold text-muted mb-1.5 tracking-wide">
+        時間
+      </span>
+      <div className="flex items-center gap-2">
+        <input
+          type="time"
+          value={editStartTime}
+          onChange={(e) => setEditStartTime(e.target.value)}
+          className="flex-1 h-11 rounded-xl border border-border bg-surface px-3 text-sm text-ink"
+        />
+        <span className="text-muted font-bold">〜</span>
+        <input
+          type="time"
+          value={editEndTime}
+          onChange={(e) => setEditEndTime(e.target.value)}
+          className="flex-1 h-11 rounded-xl border border-border bg-surface px-3 text-sm text-ink"
+        />
+      </div>
+    </div>
+
+    <TextField
+      label="ハッシュタグ"
+      placeholder="例：#月イチ大喜利"
+      value={editHashtag}
+      onChange={(e) => setEditHashtag(e.target.value)}
+      hint="※任意。# は自動で付きます"
+    />
+  </div>
+</BottomSheet>
 
       {/* add question sheet */}
       <BottomSheet
