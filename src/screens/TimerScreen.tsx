@@ -158,6 +158,7 @@ export function TimerScreen() {
   const [finished, setFinished] = useState(false);
   const [answerText, setAnswerText] = useState('');
   const [timerEnabled, setTimerEnabled] = useState(false);
+  const [answerCount, setAnswerCount] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
   const total = minutes * 60 + seconds;
@@ -204,13 +205,14 @@ export function TimerScreen() {
     });
   
     setAnswerText('');
-  
+    setAnswerCount((count) => count + 1);
   };
 
   const start = () => {
     if (total <= 0) return;
     setRemaining(total);
     setFinished(false);
+    setAnswerCount(0);
     setRunning(true);
   };
   const pause = () => setRunning(false);
@@ -323,9 +325,23 @@ export function TimerScreen() {
 
           <Ring progress={progress} total={total} remaining={remaining} />
 
+          <div className="mt-4 text-center">
+           <p className="text-3xl font-extrabold text-primary font-display tabular-nums">
+               {answerCount}答
+           </p>
+           <p className="text-[11px] text-faint font-bold mt-1">
+            現在の回答数
+           </p>
+          </div>
+
           {finished && (
             <div className="mt-4 text-center rounded-2xl bg-success/10 py-3 animate-pop">
-              <p className="font-bold text-success text-sm">タイムアップ！お疲れさまでした</p>
+              <p className="font-bold text-success text-sm">
+               タイムアップ！
+              </p>
+              <p className="font-display font-extrabold text-success text-2xl mt-1">
+               {answerCount}答出せました！
+              </p>
             </div>
           )}
 
