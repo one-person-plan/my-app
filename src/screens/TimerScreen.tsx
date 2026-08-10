@@ -282,12 +282,18 @@ export function TimerScreen() {
          <span className="text-xs font-bold text-muted">練習タイマー</span>
          <button
           type="button"
-          onClick={() => setTimerEnabled((v) => !v)}
-          disabled={!selectedQuestion}
-          className="relative w-12 h-7 rounded-full transition bg-border"
-        >
-          <span className="absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition left-1" />
-        </button>
+         onClick={() => setTimerEnabled((v) => !v)}
+         disabled={!selectedQuestion}
+         className={`relative w-12 h-7 rounded-full transition ${
+          timerEnabled ? 'bg-primary' : 'bg-border'
+          }`}
+>
+         <span
+           className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition ${
+            timerEnabled ? 'left-6' : 'left-1'
+            }`}
+          />
+         </button>
       </div>
         <textarea
           value={answerText}
