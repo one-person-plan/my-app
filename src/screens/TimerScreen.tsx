@@ -205,9 +205,6 @@ export function TimerScreen() {
   
     setAnswerText('');
   
-    if (timerEnabled) {
-      reset();
-    }
   };
 
   const start = () => {
