@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Quote, CalendarDays, ChevronRight, Clock, Hash, MessageCircle, Star } from 'lucide-react';
 import { useApp } from '@/store/AppContext';
 import { fmtDate, isFuture, isPast, daysBetween, todayISO } from '@/lib/date';
-import type { OogiriEvent } from '@/data/types';
+import type { OogiriEvent, OogiriQuestion } from '@/data/types';
 
 function SectionTitle({ icon, title, sub }: { icon: React.ReactNode; title: string; sub?: string }) {
   return (
@@ -84,7 +84,13 @@ function EventCard({ event, onClick }: { event: OogiriEvent; onClick: () => void
   );
 }
 
-export function ListScreen({ onOpenEvent }: { onOpenEvent: (id: string) => void }) {
+export function ListScreen({
+  onOpenEvent,
+  onAnswerQuestion,
+}: {
+  onOpenEvent: (id: string) => void;
+  onAnswerQuestion: (question: OogiriQuestion) => void;
+}) {
   const { events, favoriteAnswers } = useApp();
 
   const pastEvents = useMemo(
@@ -125,7 +131,7 @@ export function ListScreen({ onOpenEvent }: { onOpenEvent: (id: string) => void 
               favoriteAnswers.map(({ answer: a, question: q, event: e }) => (
                 <button
                   key={a.id}
-                  onClick={() => onOpenEvent(e.id)}
+                  onClick={() => onAnswerQuestion(q)}
                   className="w-full text-left bg-gradient-to-br from-gold-soft/80 to-surface rounded-2xl p-4 border border-gold/30 shadow-sm animate-slide-up hover:border-gold/50 active:scale-[0.98] transition"
                 >
                   <p className="text-[11px] text-gold font-bold mb-1.5 flex items-center gap-1.5">

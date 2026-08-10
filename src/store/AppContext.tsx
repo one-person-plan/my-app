@@ -29,7 +29,16 @@ interface AppState {
   deleteEvent: (id: string) => void;
   addQuestion: (eventId: string, text: string, imageUrl?: string) => void;
   deleteQuestion: (eventId: string, questionId: string) => void;
-  addAnswer: (eventId: string, questionId: string, a: { answerer: string; text: string; impression: string }) => void;
+  addAnswer: (
+    eventId: string, 
+    questionId: string, 
+    a: { 
+      answerer: string; 
+      text: string; 
+      impression: string 
+      source?: 'event' | 'answer';
+    }
+  ) => void;
   deleteAnswer: (eventId: string, questionId: string, answerId: string) => void;
   toggleFavorite: (eventId: string, questionId: string, answerId: string) => void;
   eventsByDate: (date: string) => OogiriEvent[];
@@ -105,6 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       answerer: a.answerer,
       text: a.text,
       impression: a.impression,
+      source: a.source ?? 'event',
       createdAt: Date.now(),
     };
     setEvents((prev) =>

@@ -4,6 +4,7 @@ export interface OogiriAnswer {
   text: string;
   impression: string; // 自分の感想
   favorite?: boolean;
+  source?: 'event' | 'answer';
   createdAt: number;
 }
 

@@ -148,13 +148,19 @@ function getAnswerLabel(number: number) {
   return circled[number - 1] ?? `${number}`;
 }
 
-export function TimerScreen() {
+export function TimerScreen({
+    initialQuestion,
+  }: {
+    initialQuestion?: OogiriQuestion;
+  }) {
   const { events, addAnswer } = useApp();
   const [minutes, setMinutes] = useState(1);
   const [seconds, setSeconds] = useState(0);
   const [remaining, setRemaining] = useState(0);
   const [running, setRunning] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState<OogiriQuestion | undefined>();
+  const [selectedQuestion, setSelectedQuestion] = useState<OogiriQuestion | undefined>(
+    initialQuestion
+  );
   const [finished, setFinished] = useState(false);
   const [answerText, setAnswerText] = useState('');
   const [timerEnabled, setTimerEnabled] = useState(false);
@@ -162,6 +168,10 @@ export function TimerScreen() {
   const intervalRef = useRef<number | null>(null);
 
   const total = minutes * 60 + seconds;
+
+  useEffect(() => {
+    setSelectedQuestion(initialQuestion);
+  }, [initialQuestion]);
 
   useEffect(() => {
     if (!running) return;
@@ -196,12 +206,17 @@ export function TimerScreen() {
     
     if (!question) return;
     
-    const nextNumber = question.answers.length + 1;
+    const answerCount = question.answers.filter(
+      (a) => a.source === 'answer'
+    ).length;
+    
+    const nextNumber = answerCount + 1;
     
     addAnswer(event.id, selectedQuestion.id, {
       answerer: `こたえる${getAnswerLabel(nextNumber)}`,
       text: answerText.trim(),
       impression: '',
+      source: 'answer',
     });
   
     setAnswerText('');
