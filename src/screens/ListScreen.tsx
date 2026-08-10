@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Quote, CalendarDays, ChevronRight, Clock, Hash, MessageCircle, Star } from 'lucide-react';
 import { useApp } from '@/store/AppContext';
 import { fmtDate, isFuture, isPast, daysBetween, todayISO } from '@/lib/date';
@@ -162,7 +162,7 @@ export function ListScreen({
         <section className="animate-fade-in">
           <SectionTitle
             icon={<Quote size={15} strokeWidth={2.5} />}
-            title="今日の大喜利"
+            title="今日のしがみ"
             sub="どんな一言が刺さった？"
           />
           <div className="space-y-2.5">
@@ -173,9 +173,10 @@ export function ListScreen({
               </div>
             )}
             {randomAnswers.map(({ a, q, e }) => (
-              <div
+              <button
                 key={a.id}
-                className="bg-gradient-to-br from-surface to-surface-2 rounded-2xl p-4 border border-border shadow-sm animate-slide-up"
+                onClick={() => onAnswerQuestion(q)}
+                className="w-full text-left bg-gradient-to-br from-surface to-surface-2 rounded-2xl p-4 border border-border shadow-sm animate-slide-up activate:scale-[0.98] transition"
               >
                 <p className="text-[11px] text-faint font-bold mb-1.5 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary" />
@@ -197,7 +198,7 @@ export function ListScreen({
                     「{a.impression}」
                   </p>
                 )}
-              </div>
+              </button>
             ))}
           </div>
         </section>

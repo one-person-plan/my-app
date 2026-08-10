@@ -30,9 +30,13 @@ import { TemplateSettingsSheet } from '@/components/TemplateSettings';
 export function EventDetailScreen({
   eventId,
   onBack,
+  onOpenAnswer,
 }: {
   eventId: string;
   onBack: () => void;
+  onOpenAnswer: (question:
+    OogiriQuestion
+  ) => void;
 }) {
   const { events, addQuestion, deleteQuestion, addAnswer, deleteAnswer, deleteEvent, toggleFavorite, updateEvent, } = useApp();
   const ev = events.find((e) => e.id === eventId);
@@ -286,6 +290,13 @@ export function EventDetailScreen({
                             </div>
                           ))
                         )}
+                        <button
+                          onClick={() => onOpenAnswer(q)}
+                          className="w-full h-10 rounded-xl bg-primary text-white font-bold text-xs flex items-center justify-center gap-1 hover:bg-primary-dark active:scale-95 transition shadow-md shadow-primary/20"
+                          >
+                          <MessageCircle size={14} />
+                          このお題で答える
+                        </button>
                         <div className="flex gap-2 pt-1">
                           <button
                             onClick={() => {

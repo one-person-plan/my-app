@@ -28,7 +28,11 @@ function Shell() {
       {/* phone frame on larger screens */}
       <div className="w-full max-w-[440px] min-h-screen bg-paper flex flex-col relative phone-shadow sm:my-0">
         {openEventId ? (
-          <EventDetailScreen eventId={openEventId} onBack={back} />
+          <EventDetailScreen
+            eventId={openEventId}
+            onBack={back}
+            onOpenAnswer={openAnswer}
+          />
         ) : (
           <>
             <Header />
