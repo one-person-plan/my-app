@@ -206,8 +206,8 @@ export function TimerScreen({
     
     if (!question) return;
     
-    const answerCount = question.answers.filter(
-      (a) => a.source === 'answer'
+    const answerCount = question.answers.filter((a) =>
+      a.answerer.startsWith('こたえる')
     ).length;
     
     const nextNumber = answerCount + 1;
@@ -269,22 +269,26 @@ export function TimerScreen({
             </div>
           )}
 
-          <div className="space-y-2.5">
-            {sortedEvents.length === 0 && (
-              <div className="rounded-2xl border-2 border-dashed border-border-strong p-6 text-center">
-                <p className="text-sm text-muted">イベントがありません</p>
-                <p className="text-xs text-faint mt-1">しがむ画面で登録してください</p>
-              </div>
-            )}
-            {sortedEvents.map((e) => (
-              <EventTopicItem
-                key={e.id}
-                event={e}
-                selectedQuestion={selectedQuestion}
-                onPick={(q) => setSelectedQuestion(q)}
-              />
-            ))}
-          </div>
+        {!selectedQuestion && (
+         <div className="space-y-2.5">
+          {sortedEvents.length === 0 && (
+            <div className="rounded-2xl border-2 border-dashed border-border-strong p-6 text-center">
+              <p className="text-sm text-muted">イベントがありません</p>
+              <p className="text-xs text-faint mt-1">しがむ画面で登録してください</p>
+            </div>
+          )}
+
+          {sortedEvents.map((e) => (
+            <EventTopicItem
+              key={e.id}
+              event={e}
+              selectedQuestion={selectedQuestion}
+              onPick={(q) => setSelectedQuestion(q)}
+            />
+           ))}
+         </div>
+        )}
+
         </section>
 
         {/* answer */}
