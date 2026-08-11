@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { OogiriQuestion } from '@/data/types';
+import type { OogiriQuestion, OogiriAnswer } from '@/data/types';
 import { AppProvider } from '@/store/AppContext';
 import { Header } from '@/components/Header';
 import { TabBar, type TabKey } from '@/components/TabBar';
@@ -7,11 +7,17 @@ import { ListScreen } from '@/screens/ListScreen';
 import { CalendarScreen } from '@/screens/CalendarScreen';
 import { TimerScreen } from '@/screens/TimerScreen';
 import { EventDetailScreen } from '@/screens/EventDetailScreen';
+import { AnswerDetailScreen } from '@/screens/AnswerDetailScreen';
+
 
 function Shell() {
   const [tab, setTab] = useState<TabKey>('list');
   const [openEventId, setOpenEventId] = useState<string | null>(null);
   const [answerQuestion, setAnswerQuestion] = useState<OogiriQuestion | undefined>();
+  const [answerDetail, setAnswerDetail] = useState<{
+    question: OogiriQuestion;
+    answer: OogiriAnswer;
+  } | undefined>();
 
   const openEvent = (id: string) => setOpenEventId(id);
 
@@ -19,6 +25,14 @@ function Shell() {
     setAnswerQuestion(question);
     setOpenEventId(null);
     setTab('timer');
+  };
+
+  const openAnswerDetail = (
+    question: OogiriQuestion,
+    answer: OogiriAnswer
+  ) => {
+    setAnswerDetail({ question, answer });
+    setOpenEventId(null);
   };
  
   const back = () => setOpenEventId(null);
@@ -33,6 +47,13 @@ function Shell() {
             onBack={back}
             onOpenAnswer={openAnswer}
           />
+        ) : answerDetail ? (
+          <AnswerDetailScreen
+            question={answerDetail.question}
+            answer={answerDetail.answer}
+            onBack={() => setAnswerDetail(undefined)}
+            onAnswerQuestion={openAnswer}
+          />
         ) : (
           <>
             <Header />
@@ -41,7 +62,9 @@ function Shell() {
                 <ListScreen
                   onOpenEvent={openEvent}
                   onAnswerQuestion={openAnswer}
-                />
+
+               onOpenAnswerDetail={openAnswerDetail}
+               />
               )}
               {tab === 'calendar' && <CalendarScreen onOpenEvent={openEvent} />}
               {tab === 'timer' && (
