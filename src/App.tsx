@@ -23,6 +23,7 @@ function Shell() {
 
   const openAnswer = (question: OogiriQuestion) => {
     setAnswerQuestion(question);
+    setAnswerDetail(undefined);
     setOpenEventId(null);
     setTab('timer');
   };

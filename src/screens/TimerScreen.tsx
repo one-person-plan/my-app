@@ -174,6 +174,15 @@ export function TimerScreen({
   }, [initialQuestion]);
 
   useEffect(() => {
+    setAnswerText('');
+    setAnswerCount(0);
+    setTimerEnabled(false);
+    setRunning(false);
+    setRemaining(0);
+    setFinished(false);
+  }, [selectedQuestion]);
+
+  useEffect(() => {
     if (!running) return;
     intervalRef.current = window.setInterval(() => {
       setRemaining((r) => {

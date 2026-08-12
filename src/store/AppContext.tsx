@@ -40,6 +40,16 @@ interface AppState {
     }
   ) => void;
   deleteAnswer: (eventId: string, questionId: string, answerId: string) => void;
+  updateAnswer: (
+    eventId: string,
+    questionId: string,
+    answerId: string,
+    patch: {
+      answerer: string;
+      text: string;
+      impression: string;
+    }
+  ) => void;
   toggleFavorite: (eventId: string, questionId: string, answerId: string) => void;
   eventsByDate: (date: string) => OogiriEvent[];
 }
@@ -152,6 +162,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const updateAnswer: AppState['updateAnswer'] = (
+    eventId,
+    questionId,
+    answerId,
+    patch
+  ) => {
+    setEvents((prev) =>
+      prev.map((ev) =>
+        ev.id === eventId
+          ? {
+              ...ev,
+              questions: ev.questions.map((q) =>
+                q.id === questionId
+                  ? {
+                      ...q,
+                      answers: q.answers.map((a) =>
+                        a.id === answerId
+                          ? {
+                              ...a,
+                              answerer: patch.answerer,
+                              text: patch.text,
+                              impression: patch.impression,
+                            }
+                          : a
+                      ),
+                    }
+                  : q
+              ),
+            }
+          : ev
+      )
+    );
+  };
+
   const toggleFavorite: AppState['toggleFavorite'] = (eventId, questionId, answerId) => {
     const key = favoriteKey(eventId, questionId, answerId);
     const keys = loadFavoriteKeys();
@@ -208,6 +252,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         deleteQuestion,
         addAnswer,
         deleteAnswer,
+        updateAnswer,
         toggleFavorite,
         eventsByDate,
       }}

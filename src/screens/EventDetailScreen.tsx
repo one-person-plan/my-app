@@ -38,7 +38,7 @@ export function EventDetailScreen({
     OogiriQuestion
   ) => void;
 }) {
-  const { events, addQuestion, deleteQuestion, addAnswer, deleteAnswer, deleteEvent, toggleFavorite, updateEvent, } = useApp();
+  const { events, addQuestion, deleteQuestion, addAnswer, updateAnswer, deleteAnswer, deleteEvent, toggleFavorite, updateEvent, } = useApp();
   const ev = events.find((e) => e.id === eventId);
 
   const [qSheet, setQSheet] = useState(false);
@@ -53,6 +53,10 @@ export function EventDetailScreen({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [answerSheet, setAnswerSheet] = useState<string | null>(null); // questionId
   const [ans, setAns] = useState({ answerer: '', text: '', impression: '' });
+  const [editingAnswer, setEditingAnswer] = useState<{
+    questionId: string;
+    answerId: string;
+  } | null>(null);  
   const [confirm, setConfirm] = useState<{ type: 'event' | 'question' | 'answer'; id: string } | null>(null);
   const [shareTarget, setShareTarget] = useState<{ question: OogiriQuestion; answer: OogiriAnswer } | null>(null);
   const [tplSettingsOpen, setTplSettingsOpen] = useState(false);
@@ -128,6 +132,24 @@ export function EventDetailScreen({
     });
     setAns({ answerer: '', text: '', impression: '' });
     setAnswerSheet(null);
+  };
+
+  const submitEditAnswer = () => {
+    if (!editingAnswer || !ans.text.trim()) return;
+  
+    updateAnswer(
+      ev.id,
+      editingAnswer.questionId,
+      editingAnswer.answerId,
+      {
+        answerer: ans.answerer.trim() || '自分',
+        text: ans.text.trim(),
+        impression: ans.impression.trim(),
+      }
+    );
+  
+    setAns({ answerer: '', text: '', impression: '' });
+    setEditingAnswer(null);
   };
 
   const onPickImage = (file: File) => {
@@ -279,14 +301,33 @@ export function EventDetailScreen({
                                   </span>
                                 </button>
                               </div>
-                              <div className="flex justify-end mt-1.5 pt-1.5 border-t border-border">
-                                <button
-                                  onClick={() => setConfirm({ type: 'answer', id: a.id })}
-                                  className="text-faint hover:text-error transition p-1"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
+                             <div className="flex justify-end gap-1 mt-1.5 pt-1.5 border-t border-border">
+                              <button
+                                 onClick={() => {
+                                  setAns({
+                                    answerer: a.answerer,
+                                    text: a.text,
+                                    impression: a.impression ?? '',
+                                  });
+                                  setEditingAnswer({
+                                   questionId: q.id,
+                                   answerId: a.id,
+                                  });
+                                }}
+                               className="text-faint hover:text-primary transition p-1"
+                               aria-label="回答を編集"
+                              >
+                               <Pencil size={14} />
+                              </button>
+
+                              <button
+                                onClick={() => setConfirm({ type: 'answer', id: a.id })}
+                                className="text-faint hover:text-error transition p-1"
+                                aria-label="回答を削除"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                             </div>
                           ))
                         )}
@@ -439,6 +480,81 @@ export function EventDetailScreen({
             )}
           </div>
         </div>
+      </BottomSheet>
+
+      {/* edit answer sheet */}
+      <BottomSheet
+        open={editingAnswer !== null}
+        onClose={() => {
+         setEditingAnswer(null);
+         setAns({ answerer: '', text: '', impression: '' });
+        }}
+        title="回答を編集"
+        footer={
+         <div className="flex gap-3">
+           <GhostButton
+             className="flex-1"
+             onClick={() => {
+              setEditingAnswer(null);
+              setAns({ answerer: '', text: '', impression: '' });
+             }}
+           >
+             キャンセル
+           </GhostButton>
+
+           <PrimaryButton
+             className="flex-[2]"
+             onClick={submitEditAnswer}
+             disabled={!ans.text.trim()}
+           >
+             保存する
+           </PrimaryButton>
+         </div>
+       }
+     >
+       <div className="space-y-4 pt-2">
+         <TextField
+           label="回答者名"
+           placeholder="例：山田"
+           value={ans.answerer}
+           onChange={(e) =>
+             setAns((a) => ({
+               ...a,
+               answerer: e.target.value,
+             }))
+           }
+           hint="※任意。省略すると「自分」になります"
+         />
+
+        <TextArea
+          label="回答"
+          placeholder="例：明日の自分への謝罪文"
+          value={ans.text}
+          onChange={(e) =>
+            setAns((a) => ({
+              ...a,
+              text: e.target.value,
+            }))
+          }
+        />
+
+        <div>
+          <TextArea
+            label="自分の感想（しがみ）"
+            placeholder="例：刺さった。企画に困ったら使い回せそう。"
+            value={ans.impression}
+            onChange={(e) =>
+              setAns((a) => ({
+                ...a,
+                impression: e.target.value,
+              }))
+            }
+          />
+          <span className="block text-[11px] text-faint mt-1">
+            ※任意。あとで見返したときのヒントに
+          </span>
+        </div>
+       </div>
       </BottomSheet>
 
       {/* add answer sheet */}
