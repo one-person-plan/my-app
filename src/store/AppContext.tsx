@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { initialEvents, uid, type OogiriEvent, type OogiriQuestion, type OogiriAnswer } from '@/data/types';
 import { favoriteKey, loadFavoriteKeys, saveFavoriteKeys } from '@/lib/favorites';
 
@@ -54,12 +54,33 @@ interface AppState {
   eventsByDate: (date: string) => OogiriEvent[];
 }
 
+const EVENTS_STORAGE_KEY = 'oogiri-events';
+
 const Ctx = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [events, setEvents] = useState<OogiriEvent[]>(() =>
-    applyFavoriteKeys(initialEvents, loadFavoriteKeys())
-  );
+  const [events, setEvents] = useState<OogiriEvent[]>(() => {
+    try {
+      const saved = localStorage.getItem(EVENTS_STORAGE_KEY);
+  
+      if (saved) {
+        const parsed = JSON.parse(saved) as OogiriEvent[];
+        return applyFavoriteKeys(parsed, loadFavoriteKeys());
+      }
+    } catch (error) {
+      console.error('イベントデータの読み込みに失敗しました:', error);
+    }
+  
+    return applyFavoriteKeys(initialEvents, loadFavoriteKeys());
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
+    } catch (error) {
+      console.error('イベントデータの保存に失敗しました:', error);
+    }
+  }, [events]);
 
   const addEvent: AppState['addEvent'] = (e) => {
     setEvents((prev) => [
