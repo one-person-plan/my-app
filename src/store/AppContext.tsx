@@ -8,6 +8,8 @@ export interface FavoriteAnswer {
   answer: OogiriAnswer;
 }
 
+const EVENTS_STORAGE_KEY = 'oogiri-events';
+
 function applyFavoriteKeys(events: OogiriEvent[], keys: Set<string>): OogiriEvent[] {
   return events.map((ev) => ({
     ...ev,
@@ -28,6 +30,14 @@ interface AppState {
   updateEvent: (id: string, patch: Partial<Omit<OogiriEvent, 'id' | 'questions' | 'createdAt'>>) => void;
   deleteEvent: (id: string) => void;
   addQuestion: (eventId: string, text: string, imageUrl?: string) => void;
+  updateQuestion: (
+    eventId: string,
+    questionId: string,
+    patch: {
+      text: string;
+      imageUrl?: string;
+    }
+  ) => void;
   deleteQuestion: (eventId: string, questionId: string) => void;
   addAnswer: (
     eventId: string, 
@@ -54,8 +64,6 @@ interface AppState {
   eventsByDate: (date: string) => OogiriEvent[];
 }
 
-const EVENTS_STORAGE_KEY = 'oogiri-events';
-
 const Ctx = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -72,6 +80,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   
     return applyFavoriteKeys(initialEvents, loadFavoriteKeys());
+
+    useEffect(() => {
+      try {
+        localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
+      } catch (error) {
+        console.error('イベントデータの保存に失敗しました:', error);
+      }
+    }, [events]);
+
   });
 
   useEffect(() => {
@@ -119,6 +136,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const q: OogiriQuestion = { id: uid(), text, imageUrl, answers: [] };
     setEvents((prev) =>
       prev.map((ev) => (ev.id === eventId ? { ...ev, questions: [...ev.questions, q] } : ev))
+    );
+  };
+
+  const updateQuestion: AppState['updateQuestion'] = (
+    eventId,
+    questionId,
+    patch
+  ) => {
+    setEvents((prev) =>
+      prev.map((ev) =>
+        ev.id === eventId
+          ? {
+              ...ev,
+              questions: ev.questions.map((q) =>
+                q.id === questionId
+                  ? {
+                      ...q,
+                      text: patch.text,
+                      imageUrl: patch.imageUrl,
+                    }
+                  : q
+              ),
+            }
+          : ev
+      )
     );
   };
 
@@ -270,6 +312,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         updateEvent,
         deleteEvent,
         addQuestion,
+        updateQuestion,
         deleteQuestion,
         addAnswer,
         deleteAnswer,

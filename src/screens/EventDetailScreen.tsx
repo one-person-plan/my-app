@@ -38,12 +38,15 @@ export function EventDetailScreen({
     OogiriQuestion
   ) => void;
 }) {
-  const { events, addQuestion, deleteQuestion, addAnswer, updateAnswer, deleteAnswer, deleteEvent, toggleFavorite, updateEvent, } = useApp();
+  const { events, addQuestion, updateQuestion, deleteQuestion, addAnswer, updateAnswer, deleteAnswer, deleteEvent, toggleFavorite, updateEvent, } = useApp();
   const ev = events.find((e) => e.id === eventId);
 
   const [qSheet, setQSheet] = useState(false);
   const [qText, setQText] = useState('');
   const [qImage, setQImage] = useState<string | undefined>();
+  const [editQuestionId, setEditQuestionId] = useState<string | null>(null);
+  const [editQuestionText, setEditQuestionText] = useState('');
+  const [editQuestionImage, setEditQuestionImage] = useState<string | undefined>();
   const [editSheet, setEditSheet] = useState(false);
   const [editName, setEditName] = useState('');
   const [editDate, setEditDate] = useState('');
@@ -115,6 +118,13 @@ export function EventDetailScreen({
     
       setEditSheet(false);
     };
+  
+    const openQuestionEdit = (q: OogiriQuestion) => {
+      setEditQuestionId(q.id);
+      setEditQuestionText(q.text);
+      setEditQuestionImage(q.imageUrl);
+    };
+  
   const submitQuestion = () => {
     if (!qText.trim() && !qImage) return;
     addQuestion(ev.id, qText.trim(), qImage);
@@ -122,6 +132,20 @@ export function EventDetailScreen({
     setQImage(undefined);
     setQSheet(false);
   };
+
+  const submitQuestionEdit = () => {
+    if (!editQuestionId) return;
+    if (!editQuestionText.trim() && !editQuestionImage) return;
+  
+    updateQuestion(ev.id, editQuestionId, {
+      text: editQuestionText.trim(),
+      imageUrl: editQuestionImage,
+    });
+  
+    setEditQuestionId(null);
+    setEditQuestionText('');
+    setEditQuestionImage(undefined);
+  };  
 
   const submitAnswer = () => {
     if (!answerSheet || !ans.text.trim()) return;
@@ -340,14 +364,24 @@ export function EventDetailScreen({
                         </button>
                         <div className="flex gap-2 pt-1">
                           <button
+                            onClick={() => openQuestionEdit(q)}
+                            className="flex-1 h-10 rounded-xl bg-surface-2 text-muted font-bold text-xs flex items-center justify-center gap-1 hover:text-primary active:scale-95 transition"
+                          >
+                            <Pencil size={14} />
+                            お題を編集
+                          </button>
+
+                          <button
                             onClick={() => {
-                              setAnswerSheet(q.id);
-                              setAns({ answerer: '', text: '', impression: '' });
+                             setAnswerSheet(q.id);
+                             setAns({ answerer: '', text: '', impression: '' });
                             }}
                             className="flex-1 h-10 rounded-xl bg-primary-soft text-primary font-bold text-xs flex items-center justify-center gap-1 hover:brightness-95 active:scale-95 transition"
                           >
-                            <Plus size={14} strokeWidth={3} /> 回答を追加
+                           <Plus size={14} strokeWidth={3} />
+                           回答を追加
                           </button>
+
                           <button
                             onClick={() => setConfirm({ type: 'question', id: q.id })}
                             className="w-10 h-10 rounded-xl bg-surface-2 text-faint hover:text-error flex items-center justify-center transition"
@@ -365,71 +399,151 @@ export function EventDetailScreen({
         </div>
       </div>
 
-{/* edit event sheet */}
-<BottomSheet
-  open={editSheet}
-  onClose={() => setEditSheet(false)}
-  title="イベントを編集"
-  footer={
-    <div className="flex gap-3">
-      <GhostButton className="flex-1" onClick={() => setEditSheet(false)}>
-        キャンセル
-      </GhostButton>
-      <PrimaryButton
-        className="flex-[2]"
-        onClick={submitEdit}
-        disabled={!editName.trim()}
+      {/* edit event sheet */}
+      <BottomSheet
+        open={editSheet}
+        onClose={() => setEditSheet(false)}
+        title="イベントを編集"
+        footer={
+          <div className="flex gap-3">
+            <GhostButton className="flex-1" onClick={() => setEditSheet(false)}>
+              キャンセル
+            </GhostButton>
+            <PrimaryButton
+              className="flex-[2]"
+              onClick={submitEdit}
+              disabled={!editName.trim()}
+            >
+              保存する
+            </PrimaryButton>
+          </div>
+        }
       >
-        保存する
-      </PrimaryButton>
-    </div>
-  }
->
-  <div className="space-y-4 pt-2">
-    <TextField
-      label="会名"
-      placeholder="例：月イチ大喜利会"
-      value={editName}
-      onChange={(e) => setEditName(e.target.value)}
-    />
+        <div className="space-y-4 pt-2">
+          <TextField
+            label="会名"
+            placeholder="例：月イチ大喜利会"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+          />
 
-    <TextField
-      label="日付"
-      type="date"
-      value={editDate}
-      onChange={(e) => setEditDate(e.target.value)}
-    />
+          <TextField
+            label="日付"
+            type="date"
+            value={editDate}
+            onChange={(e) => setEditDate(e.target.value)}
+          />
 
-    <div>
-      <span className="block text-xs font-bold text-muted mb-1.5 tracking-wide">
-        時間
-      </span>
-      <div className="flex items-center gap-2">
-        <input
-          type="time"
-          value={editStartTime}
-          onChange={(e) => setEditStartTime(e.target.value)}
-          className="flex-1 h-11 rounded-xl border border-border bg-surface px-3 text-sm text-ink"
-        />
-        <span className="text-muted font-bold">〜</span>
-        <input
-          type="time"
-          value={editEndTime}
-          onChange={(e) => setEditEndTime(e.target.value)}
-          className="flex-1 h-11 rounded-xl border border-border bg-surface px-3 text-sm text-ink"
-        />
-      </div>
-    </div>
+          <div>
+            <span className="block text-xs font-bold text-muted mb-1.5 tracking-wide">
+              時間
+            </span>
+            <div className="flex items-center gap-2">
+              <input
+                type="time"
+                value={editStartTime}
+                onChange={(e) => setEditStartTime(e.target.value)}
+                className="flex-1 h-11 rounded-xl border border-border bg-surface px-3 text-sm text-ink"
+              />
+              <span className="text-muted font-bold">〜</span>
+              <input
+                type="time"
+                value={editEndTime}
+                onChange={(e) => setEditEndTime(e.target.value)}
+                className="flex-1 h-11 rounded-xl border border-border bg-surface px-3 text-sm text-ink"
+              />
+            </div>
+          </div>
 
-    <TextField
-      label="ハッシュタグ"
-      placeholder="例：#月イチ大喜利"
-      value={editHashtag}
-      onChange={(e) => setEditHashtag(e.target.value)}
-      hint="※任意。# は自動で付きます"
-    />
-  </div>
-</BottomSheet>
+          <TextField
+            label="ハッシュタグ"
+            placeholder="例：#月イチ大喜利"
+            value={editHashtag}
+            onChange={(e) => setEditHashtag(e.target.value)}
+            hint="※任意。# は自動で付きます"
+          />
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+       open={editQuestionId !== null}
+       onClose={() => setEditQuestionId(null)}
+       title="お題を編集"
+       footer={
+          <div className="flex gap-3">
+            <GhostButton
+              className="flex-1"
+              onClick={() => setEditQuestionId(null)}
+            >
+              キャンセル
+            </GhostButton>
+
+            <PrimaryButton
+              className="flex-[2]"
+              onClick={submitQuestionEdit}
+              disabled={!editQuestionText.trim() && !editQuestionImage}
+            >
+              保存する
+            </PrimaryButton>
+          </div>
+        }
+      >
+        <div className="space-y-4 pt-2">
+          <TextArea
+            label="お題テキスト"
+            placeholder="例：コンビニで一番売れてはいけないもの"
+            value={editQuestionText}
+            onChange={(e) => setEditQuestionText(e.target.value)}
+          />
+
+          <div>
+            <span className="block text-xs font-bold text-muted mb-1.5 tracking-wide">
+              お題画像（任意）
+            </span>
+
+            {editQuestionImage ? (
+              <div className="relative rounded-2xl overflow-hidden">
+                <img
+                  src={editQuestionImage}
+                  alt="プレビュー"
+                  className="w-full max-h-48 object-cover"
+                />
+
+                <button
+                  onClick={() => setEditQuestionImage(undefined)}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-ink/60 text-white flex items-center justify-center"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-2 h-32 rounded-2xl border-2 border-dashed border-border-strong cursor-pointer hover:bg-surface-2 transition">
+                <Camera size={24} className="text-faint" />
+
+                <span className="text-xs text-muted font-medium">
+                  カメラ撮影 / 写真アップロード
+                </span>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        setEditQuestionImage(reader.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+            )}
+         </div>
+        </div>
+      </BottomSheet>
 
       {/* add question sheet */}
       <BottomSheet
