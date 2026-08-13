@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { OogiriQuestion, OogiriAnswer } from '@/data/types';
-import { AppProvider } from '@/store/AppContext';
+import type { OogiriQuestion, OogiriAnswer, OogiriEvent } from '@/data/types';
+import { AppProvider, useApp } from '@/store/AppContext';
 import { Header } from '@/components/Header';
 import { TabBar, type TabKey } from '@/components/TabBar';
 import { ListScreen } from '@/screens/ListScreen';
@@ -11,6 +11,7 @@ import { AnswerDetailScreen } from '@/screens/AnswerDetailScreen';
 
 
 function Shell() {
+  const {events} = useApp();
   const [tab, setTab] = useState<TabKey>('list');
   const [openEventId, setOpenEventId] = useState<string | null>(null);
   const [answerQuestion, setAnswerQuestion] = useState<OogiriQuestion | undefined>();
@@ -28,6 +29,12 @@ function Shell() {
     setTab('timer');
   };
 
+  const getEventForQuestion = (questionId: string): OogiriEvent | undefined => {
+    return events.find((event) =>
+      event.questions.some((question) => question.id === questionId)
+    );
+  };
+  
   const openAnswerDetail = (
     question: OogiriQuestion,
     answer: OogiriAnswer
@@ -54,6 +61,7 @@ function Shell() {
           <AnswerDetailScreen
             question={answerDetail.question}
             answer={answerDetail.answer}
+            event={getEventForQuestion(answerDetail.question.id)}
             onBack={() => setAnswerDetail(undefined)}
             onAnswerQuestion={openAnswer}
             onShare={() => {

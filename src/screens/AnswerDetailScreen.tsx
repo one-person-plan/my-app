@@ -1,15 +1,17 @@
 import { ArrowLeft, Quote, MessageCircle, User, PenLine, Share2 } from 'lucide-react';
-import type { OogiriQuestion, OogiriAnswer } from '@/data/types';
+import type { OogiriQuestion, OogiriAnswer, OogiriEvent } from '@/data/types';
 
 export function AnswerDetailScreen({
   question,
   answer,
+  event,
   onBack,
   onAnswerQuestion,
   onShare,
 }: {
   question: OogiriQuestion;
   answer: OogiriAnswer;
+  event?: OogiriEvent;
   onBack: () => void;
   onAnswerQuestion: (question: OogiriQuestion) => void;
   onShare: () => void;
@@ -65,10 +67,35 @@ export function AnswerDetailScreen({
               「{answer.text}」
             </p>
 
-            <div className="flex items-center gap-1.5 text-xs text-muted mt-4 pt-3 border-t border-border">
-              <User size={13} />
-              {answer.answerer}
+            <div className="mt-4 pt-3 border-t border-border space-y-3">
+              <div>
+                <p className="text-[10px] font-bold text-faint mb-1">
+                  回答者
+                </p>
+                <div className="flex items-center gap-1.5 text-xs text-muted">
+                  <User size={13} />
+                  {answer.answerer}
+                </div>
+              </div>
+
+              {event && (
+                <div>
+                  <p className="text-[10px] font-bold text-faint mb-1">
+                    イベント
+                  </p>
+                  <div className="text-xs text-muted leading-relaxed">
+                    <p className="font-bold text-ink">
+                      {event.name}
+                    </p>
+                    <p className="mt-0.5">
+                      {event.date}
+                      {event.time && `　${event.time}`}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
+
           </section>
 
           {/* 感想 */}
