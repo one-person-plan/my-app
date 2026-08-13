@@ -21,6 +21,7 @@ export interface OogiriEvent {
   date: string; // YYYY-MM-DD
   time?: string; // e.g. "18:00〜22:00"
   hashtag?: string;
+  memo?: string;
   questions: OogiriQuestion[];
   createdAt: number;
 }

@@ -58,6 +58,7 @@ export function EventDetailScreen({
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const [editHashtag, setEditHashtag] = useState('');
+  const [editMemo, setEditMemo] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [answerSheet, setAnswerSheet] = useState<string | null>(null); // questionId
   const [ans, setAns] = useState({ answerer: '', text: '', impression: '' });
@@ -101,6 +102,7 @@ export function EventDetailScreen({
       setEditStartTime(start);
       setEditEndTime(end);
       setEditHashtag(ev.hashtag ?? '');
+      setEditMemo(ev.memo ?? '');
       setEditSheet(true);
     };
     
@@ -119,6 +121,7 @@ export function EventDetailScreen({
             ? editHashtag.trim()
             : `#${editHashtag.trim()}`
           : undefined,
+        memo: editMemo.trim() || undefined,
       });
     
       setEditSheet(false);
@@ -244,6 +247,17 @@ export function EventDetailScreen({
           {upcoming && (
             <div className="rounded-2xl bg-gold-soft p-3.5 text-[12px] text-gold font-bold flex items-center gap-2">
               <Pencil size={14} /> 予定のイベント — お題を事前に登録できます
+            </div>
+          )}
+
+          {ev.memo && (
+            <div className="bg-surface rounded-2xl p-4 border border-border shadow-sm">
+              <p className="text-[11px] font-bold text-primary mb-1.5">
+                備考
+              </p>
+              <p className="text-sm text-muted leading-relaxed whitespace-pre-wrap">
+                {ev.memo}
+              </p>
             </div>
           )}
 
@@ -470,6 +484,14 @@ export function EventDetailScreen({
             onChange={(e) => setEditHashtag(e.target.value)}
             hint="※任意。# は自動で付きます"
           />
+
+          <TextArea
+            label="備考"
+            placeholder="例：主催は○○さん。タッグ相手は○○さん。"
+            value={editMemo}
+            onChange={(e) => setEditMemo(e.target.value)}
+          />
+
         </div>
       </BottomSheet>
 

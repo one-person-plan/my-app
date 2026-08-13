@@ -26,7 +26,7 @@ function applyFavoriteKeys(events: OogiriEvent[], keys: Set<string>): OogiriEven
 interface AppState {
   events: OogiriEvent[];
   favoriteAnswers: FavoriteAnswer[];
-  addEvent: (e: { name: string; date: string; time?: string; hashtag?: string }) => void;
+  addEvent: (e: { name: string; date: string; time?: string; hashtag?: string; memo?: string; }) => void;
   updateEvent: (id: string, patch: Partial<Omit<OogiriEvent, 'id' | 'questions' | 'createdAt'>>) => void;
   deleteEvent: (id: string) => void;
   addQuestion: (eventId: string, text: string, imageUrl?: string) => void;
@@ -107,6 +107,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         date: e.date,
         time: e.time,
         hashtag: e.hashtag,
+        memo: e.memo,
         questions: [],
         createdAt: Date.now(),
       },
