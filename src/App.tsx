@@ -47,6 +47,8 @@ function Shell() {
             eventId={openEventId}
             onBack={back}
             onOpenAnswer={openAnswer}
+          
+          onOpenAnswerDetail={openAnswerDetail}
           />
         ) : answerDetail ? (
           <AnswerDetailScreen

@@ -31,12 +31,17 @@ export function EventDetailScreen({
   eventId,
   onBack,
   onOpenAnswer,
+  onOpenAnswerDetail,
 }: {
   eventId: string;
   onBack: () => void;
-  onOpenAnswer: (question:
-    OogiriQuestion
+  onOpenAnswer: (
+    question: OogiriQuestion
   ) => void;
+  onOpenAnswerDetail: (
+    question: OogiriQuestion,
+    answer: OogiriAnswer
+  ) => void; 
 }) {
   const { events, addQuestion, updateQuestion, deleteQuestion, addAnswer, updateAnswer, deleteAnswer, deleteEvent, toggleFavorite, updateEvent, } = useApp();
   const ev = events.find((e) => e.id === eventId);
@@ -309,7 +314,7 @@ export function EventDetailScreen({
                                   <Star size={16} fill={a.favorite ? 'currentColor' : 'none'} />
                                 </button>
                                 <button
-                                  onClick={() => setShareTarget({ question: q, answer: a })}
+                                  onClick={() => onOpenAnswerDetail(q, a)}
                                   className="flex-1 min-w-0 text-left active:scale-[0.99] transition"
                                 >
                                   <p className="font-bold text-sm text-ink leading-relaxed">「{a.text}」</p>
@@ -320,9 +325,12 @@ export function EventDetailScreen({
                                       <p className="text-xs text-muted italic leading-relaxed">{a.impression}</p>
                                     </div>
                                   )}
-                                  <span className="inline-flex items-center gap-1 text-[10px] text-accent font-bold mt-2.5">
-                                    <Share2 size={11} /> タップしてXに共有
-                                  </span>
+                                  {a.source !== 'answer' && (
+                                      <span className="inline-flex items-center gap-1 text-[10px] text-accent font-bold mt-2.5">
+                                        <Share2 size={11} /> タップしてXに共有
+                                      </span>
+                                    )
+                                  }
                                 </button>
                               </div>
                              <div className="flex justify-end gap-1 mt-1.5 pt-1.5 border-t border-border">
