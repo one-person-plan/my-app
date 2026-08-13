@@ -1,4 +1,4 @@
-import { ArrowLeft, Quote, MessageCircle, User, PenLine } from 'lucide-react';
+import { ArrowLeft, Quote, MessageCircle, User, PenLine, Share2 } from 'lucide-react';
 import type { OogiriQuestion, OogiriAnswer } from '@/data/types';
 
 export function AnswerDetailScreen({
@@ -6,11 +6,13 @@ export function AnswerDetailScreen({
   answer,
   onBack,
   onAnswerQuestion,
+  onShare,
 }: {
   question: OogiriQuestion;
   answer: OogiriAnswer;
   onBack: () => void;
   onAnswerQuestion: (question: OogiriQuestion) => void;
+  onShare: () => void;
 }) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -91,6 +93,17 @@ export function AnswerDetailScreen({
             <PenLine size={17} />
             このお題で答える
           </button>
+
+          {/* Xで共有する */}
+          {answer.source !== 'answer' && (
+            <button
+              onClick={onShare}
+               className="w-full h-12 rounded-xl bg-surface border border-border text-ink font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface2 active:scale-[0.98] transition"
+            >
+              <Share2 size={17} />
+              Xで共有する
+            </button>
+          )}
 
         </div>
       </div>

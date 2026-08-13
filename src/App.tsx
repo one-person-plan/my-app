@@ -54,6 +54,17 @@ function Shell() {
             answer={answerDetail.answer}
             onBack={() => setAnswerDetail(undefined)}
             onAnswerQuestion={openAnswer}
+            onShare={() => {
+              const postText = [
+                answerDetail.question.text || '画像のお題',
+                `「${answerDetail.answer.text}」`,
+                answerDetail.answer.answerer,
+              ].join('\n');
+            
+              const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`;
+            
+              window.open(url, '_blank');
+            }}
           />
         ) : (
           <>
