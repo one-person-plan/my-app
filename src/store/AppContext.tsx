@@ -18,6 +18,9 @@ import {
   loadFavoriteKeys,
   saveFavoriteKeys,
 } from '@/lib/favorites';
+import {
+  exportEvents
+} from '@/lib/backup';
 
 export interface FavoriteAnswer {
   event: OogiriEvent;
@@ -162,6 +165,7 @@ function loadEvents(): OogiriEvent[] {
 interface AppState {
   events: OogiriEvent[];
   favoriteAnswers: FavoriteAnswer[];
+  restoreEvents: (events: OogiriEvent[]) => void;
 
   addEvent: (e: {
     name: string;
@@ -328,10 +332,7 @@ export function AppProvider({
     ]);
   };
 
-  const updateEvent: AppState['updateEvent'] = (
-    id,
-    patch
-  ) => {
+  const updateEvent: AppState['updateEvent'] = (id, patch) => {
     setEvents((prev) =>
       prev.map((ev) =>
         ev.id === id
@@ -342,6 +343,15 @@ export function AppProvider({
           : ev
       )
     );
+  };
+  
+  const restoreEvents: AppState['restoreEvents'] = (restoredEvents) => {
+    // 復元前に現在のデータをバックアップ
+    if (events.length > 0) {
+      exportEvents(events);
+    }
+  
+    setEvents(restoredEvents);
   };
 
   const deleteEvent: AppState['deleteEvent'] = (id) => {
@@ -647,6 +657,7 @@ export function AppProvider({
       value={{
         events,
         favoriteAnswers,
+        restoreEvents,
         addEvent,
         updateEvent,
         deleteEvent,

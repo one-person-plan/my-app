@@ -8,12 +8,14 @@ import { CalendarScreen } from '@/screens/CalendarScreen';
 import { TimerScreen } from '@/screens/TimerScreen';
 import { EventDetailScreen } from '@/screens/EventDetailScreen';
 import { AnswerDetailScreen } from '@/screens/AnswerDetailScreen';
+import { SettingsScreen } from '@/screens/SettingsScreen';
 
 
 function Shell() {
   const {events} = useApp();
   const [tab, setTab] = useState<TabKey>('list');
   const [openEventId, setOpenEventId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [answerQuestion, setAnswerQuestion] = useState<OogiriQuestion | undefined>();
   const [answerDetail, setAnswerDetail] = useState<{
     question: OogiriQuestion;
@@ -76,16 +78,23 @@ function Shell() {
               window.open(url, '_blank');
             }}
           />
+        ) : settingsOpen ? (
+          <SettingsScreen
+            onBack={() =>
+              setSettingsOpen(false)
+            }
+          />
         ) : (
           <>
-            <Header />
+            <Header onOpenSettings={()=> 
+              setSettingsOpen(true)}
+            />
             <main className="flex-1 flex flex-col overflow-hidden">
               {tab === 'list' && (
                 <ListScreen
                   onOpenEvent={openEvent}
                   onAnswerQuestion={openAnswer}
-
-               onOpenAnswerDetail={openAnswerDetail}
+                  onOpenAnswerDetail={openAnswerDetail}
                />
               )}
               {tab === 'calendar' && <CalendarScreen onOpenEvent={openEvent} />}
