@@ -67,11 +67,18 @@ function Shell() {
             onBack={() => setAnswerDetail(undefined)}
             onAnswerQuestion={openAnswer}
             onShare={() => {
+              const event = getEventForQuestion(answerDetail.question.id);
+
+              const hashtag = event?.hashtag
+              ? `#${event.hashtag.replace(/^#/, '')}`
+              : undefined;
+
               const postText = [
                 answerDetail.question.text || '画像のお題',
-                `「${answerDetail.answer.text}」`,
                 answerDetail.answer.answerer,
-              ].join('\n');
+                `「${answerDetail.answer.text}」`,
+                event?.hashtag,
+              ].filter(Boolean).join('\n');
             
               const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`;
             
