@@ -11,35 +11,86 @@ export interface OogiriBackup {
 
 /**
  * 現在のイベントデータをJSONファイルとして保存する
+ *
+ * Android Chromeなど対応ブラウザでは、
+ * 保存先を選択して既存のバックアップファイルを上書きできます。
+ * 非対応ブラウザでは通常のダウンロードにフォールバックします。
  */
-export function exportEvents(events: OogiriEvent[]): void {
-  const backup: OogiriBackup = {
-    app: 'oogiri',
-    version: BACKUP_VERSION,
-    exportedAt: Date.now(),
-    events,
-  };
-
-  const json = JSON.stringify(backup, null, 2);
-
-  const blob = new Blob([json], {
-    type: 'application/json',
-  });
-
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `oogiri-backup-${formatDate(
-    new Date()
-  )}.json`;
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  URL.revokeObjectURL(url);
-}
+export async function exportEvents(
+    events: OogiriEvent[]
+  ): Promise<void> {
+    const backup: OogiriBackup = {
+      app: 'oogiri',
+      version: BACKUP_VERSION,
+      exportedAt: Date.now(),
+      events,
+    };
+  
+    const json = JSON.stringify(backup, null, 2);
+  
+    // ファイル保存APIに対応している場合
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (
+          window as Window & {
+            showSaveFilePicker: (options?: {
+              suggestedName?: string;
+              types?: {
+                description: string;
+                accept: Record<string, string[]>;
+              }[];
+            }) => Promise<FileSystemFileHandle>;
+          }
+        ).showSaveFilePicker({
+          suggestedName: 'oogiri-backup.json',
+          types: [
+            {
+              description: '大喜利バックアップ',
+              accept: {
+                'application/json': ['.json'],
+              },
+            },
+          ],
+        });
+  
+        const writable = await handle.createWritable();
+        await writable.write(json);
+        await writable.close();
+  
+        return;
+      } catch (error) {
+        // ユーザーが保存ダイアログをキャンセルした場合
+        if (
+          error instanceof DOMException &&
+          error.name === 'AbortError'
+        ) {
+          return;
+        }
+  
+        console.warn(
+          'ファイル保存APIに失敗したため、通常のダウンロードに切り替えます。',
+          error
+        );
+      }
+    }
+  
+    // 非対応ブラウザ用のフォールバック
+    const blob = new Blob([json], {
+      type: 'application/json',
+    });
+  
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+  
+    link.href = url;
+    link.download = 'oogiri-backup.json';
+  
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  
+    URL.revokeObjectURL(url);
+  }
 
 /**
  * バックアップファイルを読み込む
@@ -131,25 +182,4 @@ function isValidEvents(
       Array.isArray(e.questions)
     );
   });
-}
-
-/**
- * ファイル名用の日付
- * 例：2026-08-14-235900
- */
-function formatDate(date: Date): string {
-  const pad = (value: number) =>
-    String(value).padStart(2, '0');
-
-  return [
-    date.getFullYear(),
-    pad(date.getMonth() + 1),
-    pad(date.getDate()),
-  ].join('-') +
-    '-' +
-    [
-      pad(date.getHours()),
-      pad(date.getMinutes()),
-      pad(date.getSeconds()),
-    ].join('');
 }

@@ -17,8 +17,8 @@ export function SettingsScreen({
   const [importFile, setImportFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleExport = () => {
-    exportEvents(events);
+  const handleExport = async () => {
+    await exportEvents(events);
   };
 
   const handleSelectFile = (

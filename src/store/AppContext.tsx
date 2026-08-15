@@ -18,9 +18,6 @@ import {
   loadFavoriteKeys,
   saveFavoriteKeys,
 } from '@/lib/favorites';
-import {
-  exportEvents
-} from '@/lib/backup';
 
 export interface FavoriteAnswer {
   event: OogiriEvent;
@@ -345,12 +342,7 @@ export function AppProvider({
     );
   };
   
-  const restoreEvents: AppState['restoreEvents'] = (restoredEvents) => {
-    // 復元前に現在のデータをバックアップ
-    if (events.length > 0) {
-      exportEvents(events);
-    }
-  
+  const restoreEvents: AppState['restoreEvents'] = (restoredEvents) => {  
     setEvents(restoredEvents);
   };
 
