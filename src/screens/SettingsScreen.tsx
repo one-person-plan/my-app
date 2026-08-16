@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
-import { ArrowLeft, Download, Upload, Trash2, Database } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Database, FileText } from 'lucide-react';
 import { useApp } from '@/store/AppContext';
 import { exportEvents, importEvents } from '@/lib/backup';
 import { BottomSheet, ConfirmDialog } from '@/components/ui/Sheet';
 import { PrimaryButton, GhostButton } from '@/components/ui/Field';
+import { TemplateSettingsSheet } from '@/components/TemplateSettings';
 
 export function SettingsScreen({
   onBack,
@@ -16,6 +17,7 @@ export function SettingsScreen({
   const [importSheetOpen, setImportSheetOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [templateSettingsOpen, setTemplateSettingsOpen] = useState(false);
 
   const handleExport = async () => {
     await exportEvents(events);
@@ -135,6 +137,31 @@ export function SettingsScreen({
             </div>
           </section>
 
+          {/* X共有 */}
+          <section>
+            <h2 className="px-1 mb-2 text-xs font-bold text-muted tracking-wide">
+              X共有
+            </h2>
+            <div className="bg-surface rounded-2xl border border-border overflow-hidden">
+              <button
+                onClick={() => setTemplateSettingsOpen(true)}
+                className="w-full flex items-center gap-3 p-4 text-left hover:bg-surface-2/50 active:bg-surface-2 transition"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary flex items-center justify-center shrink-0">
+                  <FileText size={18} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-ink">
+                    X共有テンプレート
+                  </p>
+                  <p className="text-xs text-muted mt-0.5">
+                    Xに投稿する文章のテンプレートを編集します
+                  </p>
+                </div>
+              </button>
+            </div>
+          </section>
+
           {/* データについて */}
           <section>
             <h2 className="px-1 mb-2 text-xs font-bold text-muted tracking-wide">
@@ -224,6 +251,10 @@ export function SettingsScreen({
           )}
         </div>
       </BottomSheet>
+      <TemplateSettingsSheet
+        open={templateSettingsOpen}
+        onClose={() => setTemplateSettingsOpen(false)}
+      />
     </div>
   );
 }
