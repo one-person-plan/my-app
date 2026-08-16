@@ -294,9 +294,13 @@ export function EventDetailScreen({
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-sm text-ink leading-snug">{q.text}</p>
                         {q.imageUrl && (
-                          <span className="inline-flex items-center gap-1 text-[10px] text-accent font-bold mt-1">
-                            <ImagePlus size={11} /> 画像あり
-                          </span>
+                          <div className="mt-2 rounded-xl overflow-hidden">
+                            <img
+                              src={q.imageUrl}
+                              alt="お題画像"
+                              className="w-full max-h-40 object-cover"
+                            />
+                          </div>
                         )}
                         <p className="text-[11px] text-faint font-medium mt-0.5">回答 {q.answers.length}件</p>
                       </div>
