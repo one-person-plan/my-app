@@ -9,6 +9,7 @@ import { TimerScreen } from '@/screens/TimerScreen';
 import { EventDetailScreen } from '@/screens/EventDetailScreen';
 import { AnswerDetailScreen } from '@/screens/AnswerDetailScreen';
 import { SettingsScreen } from '@/screens/SettingsScreen';
+import { loadTemplates, buildPostText } from '@/lib/templates';
 
 
 function Shell() {
@@ -67,18 +68,20 @@ function Shell() {
             onBack={() => setAnswerDetail(undefined)}
             onAnswerQuestion={openAnswer}
             onShare={() => {
+              const templates = loadTemplates();
               const event = getEventForQuestion(answerDetail.question.id);
-
-              const hashtag = event?.hashtag
-              ? `#${event.hashtag.replace(/^#/, '')}`
-              : undefined;
-
-              const postText = [
-                answerDetail.question.text || '画像のお題',
-                answerDetail.answer.answerer,
-                `「${answerDetail.answer.text}」`,
-                event?.hashtag,
-              ].filter(Boolean).join('\n');
+            
+              const postText = buildPostText(
+                answerDetail.question.imageUrl
+                  ? templates.imageTemplate
+                  : templates.textTemplate,
+                {
+                  question: answerDetail.question.text || '画像のお題',
+                  name: answerDetail.answer.answerer,
+                  answer: answerDetail.answer.text,
+                  hashtag: event?.hashtag ?? '',
+                }
+              );
             
               const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`;
             
