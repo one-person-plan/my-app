@@ -112,15 +112,6 @@ export function AnswerDetailScreen({
             </section>
           )}
 
-          {/* このお題で答える */}
-          <button
-            onClick={() => onAnswerQuestion(question)}
-            className="w-full h-12 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-primary/20 active:scale-[0.98] transition"
-          >
-            <PenLine size={17} />
-            このお題で答える
-          </button>
-
           {/* Xで共有する */}
           {answer.source !== 'answer' && (
             <button
@@ -131,6 +122,15 @@ export function AnswerDetailScreen({
               Xで共有する
             </button>
           )}
+
+          {/* このお題で答える */}
+          <button
+            onClick={() => onAnswerQuestion(question)}
+            className="w-full h-12 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-primary/20 active:scale-[0.98] transition"
+          >
+            <PenLine size={17} />
+            このお題で答える
+          </button>
 
         </div>
       </div>
