@@ -374,45 +374,49 @@ export function EventDetailScreen({
                                 <Trash2 size={14} />
                               </button>
                             </div>
-                            </div>
+                          </div>
                           ))
                         )}
+
+                        {/* 回答を追加：このアプリのメイン操作 */}
                         <button
-                          onClick={() => onOpenAnswer(q)}
-                          className="w-full h-10 rounded-xl bg-primary text-white font-bold text-xs flex items-center justify-center gap-1 hover:bg-primary-dark active:scale-95 transition shadow-md shadow-primary/20"
-                          >
-                          <MessageCircle size={14} />
-                          このお題で答える
+                          onClick={() => {
+                            setAnswerSheet(q.id);
+                            setAns({ answerer: '', text: '', impression: '' });
+                          }}
+                          className="w-full h-12 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-dark active:scale-[0.98] transition shadow-md shadow-primary/20"
+                        >
+                          <Plus size={17} strokeWidth={3} />
+                          回答を追加
                         </button>
+
+                        {/* 副次操作 */}
                         <div className="flex gap-2 pt-1">
+                          <button
+                            onClick={() => onOpenAnswer(q)}
+                            className="flex-1 h-10 rounded-xl bg-surface-2 text-muted font-bold text-xs flex items-center justify-center gap-1 hover:text-primary active:scale-95 transition"
+                          >
+                            <MessageCircle size={14} />
+                            このお題で答える
+                          </button>
+
                           <button
                             onClick={() => openQuestionEdit(q)}
                             className="flex-1 h-10 rounded-xl bg-surface-2 text-muted font-bold text-xs flex items-center justify-center gap-1 hover:text-primary active:scale-95 transition"
                           >
-                            <Pencil size={14} />
-                            お題を編集
-                          </button>
+                          <Pencil size={14} />
+                          お題を編集
+                        </button>
 
-                          <button
-                            onClick={() => {
-                             setAnswerSheet(q.id);
-                             setAns({ answerer: '', text: '', impression: '' });
-                            }}
-                            className="flex-1 h-10 rounded-xl bg-primary-soft text-primary font-bold text-xs flex items-center justify-center gap-1 hover:brightness-95 active:scale-95 transition"
-                          >
-                           <Plus size={14} strokeWidth={3} />
-                           回答を追加
-                          </button>
-
-                          <button
-                            onClick={() => setConfirm({ type: 'question', id: q.id })}
-                            className="w-10 h-10 rounded-xl bg-surface-2 text-faint hover:text-error flex items-center justify-center transition"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => setConfirm({ type: 'question', id: q.id })}
+                          className="w-10 h-10 rounded-xl bg-surface-2 text-faint hover:text-error flex items-center justify-center transition"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                    )}
+                    </div>
+                  )}
                   </div>
                 );
               })}
