@@ -309,11 +309,6 @@ export function EventDetailScreen({
 
                     {open && (
                       <div className="px-4 pb-4 pt-1 border-t border-border space-y-2.5 animate-fade-in">
-                        {q.imageUrl && (
-                          <div className="relative rounded-xl overflow-hidden">
-                            <img src={q.imageUrl} alt="お題画像" className="w-full max-h-48 object-cover" />
-                          </div>
-                        )}
                         {q.answers.length === 0 ? (
                           <p className="text-xs text-faint text-center py-3">回答を追加してください</p>
                         ) : (
