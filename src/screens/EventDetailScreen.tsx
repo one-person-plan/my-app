@@ -94,6 +94,21 @@ export function EventDetailScreen({
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+    const shareToX = (q: OogiriQuestion, a: OogiriAnswer) => {
+      const postText = buildPostText(
+        q.imageUrl ? templates.imageTemplate : templates.textTemplate,
+        {
+          question: q.text || '画像のお題',
+          name: a.answerer,
+          answer: a.text,
+          hashtag: ev.hashtag,
+        }
+      );
+    
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`;
+    
+      window.open(url, '_blank');
+    };
     const openEditSheet = () => {
       const [start = '', end = ''] = ev.time?.split('〜') ?? [];
     
@@ -325,9 +340,15 @@ export function EventDetailScreen({
                                   aria-label={a.favorite ? 'お気に入りを解除' : 'お気に入りに追加'}
                                 >
                                   <Star size={16} fill={a.favorite ? 'currentColor' : 'none'} />
-                                </button>
+                                </button>  
                                 <button
-                                  onClick={() => onOpenAnswerDetail(q, a)}
+                                  onClick={() => {
+                                    if (a.source !== 'answer') {
+                                      shareToX(q, a);
+                                    } else {
+                                      onOpenAnswerDetail(q, a);
+                                    }
+                                  }}
                                   className="flex-1 min-w-0 text-left active:scale-[0.99] transition"
                                 >
                                   <p className="font-bold text-sm text-ink leading-relaxed">「{a.text}」</p>
