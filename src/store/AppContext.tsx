@@ -245,6 +245,9 @@ export function AppProvider({
 }: {
   children: ReactNode;
 }) {
+
+localStorage.removeItem(EVENTS_BACKUP_STORAGE_KEY);
+
   const [events, setEvents] = useState<OogiriEvent[]>(
     () => loadEvents()
   );
@@ -260,39 +263,25 @@ export function AppProvider({
       savedAt: Date.now(),
       events,
     };
-
+  
     const serialized = JSON.stringify(data);
-
+  
     try {
-      // --------------------------------
-      // ① メインデータを保存
-      // --------------------------------
       localStorage.setItem(
         EVENTS_STORAGE_KEY,
         serialized
       );
-
-      // --------------------------------
-      // ② 保存できたか確認
-      // --------------------------------
+  
       const saved = localStorage.getItem(
         EVENTS_STORAGE_KEY
       );
-
+  
       if (saved !== serialized) {
         throw new Error(
           '保存後のデータ確認に失敗しました'
         );
       }
-
-      // --------------------------------
-      // ③ バックアップを保存
-      // --------------------------------
-      localStorage.setItem(
-        EVENTS_BACKUP_STORAGE_KEY,
-        serialized
-      );
-
+  
       console.log(
         `イベントデータを保存しました（${events.length}件）`
       );
@@ -301,14 +290,10 @@ export function AppProvider({
         'イベントデータの保存に失敗しました:',
         error
       );
-
-      /**
-       * 保存容量不足などの場合に、
-       * ユーザーへ気付きやすいようにする
-       */
+  
       alert(
         'データの保存に失敗しました。\n\n' +
-          '端末の空き容量やブラウザの保存領域を確認してください。'
+          'お題画像などのデータ量が大きすぎる可能性があります。'
       );
     }
   }, [events]);
