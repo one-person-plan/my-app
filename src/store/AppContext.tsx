@@ -26,7 +26,6 @@ export interface FavoriteAnswer {
 }
 
 const EVENTS_STORAGE_KEY = 'oogiri-events';
-const EVENTS_BACKUP_STORAGE_KEY = 'oogiri-events-backup';
 const EVENTS_STORAGE_VERSION = 1;
 
 interface StoredEvents {
@@ -110,44 +109,6 @@ function loadEvents(): OogiriEvent[] {
   } catch (error) {
     console.error(
       'イベントデータの読み込みに失敗しました:',
-      error
-    );
-  }
-
-  /**
-   * メインデータが壊れていた場合、
-   * バックアップから復旧を試みる
-   */
-  try {
-    const backup = localStorage.getItem(
-      EVENTS_BACKUP_STORAGE_KEY
-    );
-
-    if (backup) {
-      const parsed: unknown = JSON.parse(backup);
-
-      if (
-        parsed &&
-        typeof parsed === 'object' &&
-        'events' in parsed
-      ) {
-        const stored = parsed as StoredEvents;
-
-        if (isValidEvents(stored.events)) {
-          console.warn(
-            'メインデータが読み込めなかったため、バックアップから復旧しました'
-          );
-
-          return applyFavoriteKeys(
-            stored.events,
-            favoriteKeys
-          );
-        }
-      }
-    }
-  } catch (error) {
-    console.error(
-      'バックアップデータの読み込みにも失敗しました:',
       error
     );
   }
@@ -245,8 +206,6 @@ export function AppProvider({
 }: {
   children: ReactNode;
 }) {
-
-localStorage.removeItem(EVENTS_BACKUP_STORAGE_KEY);
 
   const [events, setEvents] = useState<OogiriEvent[]>(
     () => loadEvents()
