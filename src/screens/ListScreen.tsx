@@ -115,6 +115,11 @@ export function ListScreen({
     return shuffled.slice(0, 3);
   }, [events]);
 
+  const randomFavoriteAnswers = useMemo(() => {
+    const shuffled = [...favoriteAnswers].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 3);
+  }, [favoriteAnswers]);
+
   return (
     <div className="flex-1 overflow-y-auto pb-4">
       <div className="px-4 pt-4 space-y-7">
@@ -133,7 +138,7 @@ export function ListScreen({
                 <p className="text-xs text-faint mt-1">イベント詳細で ★ をタップして登録しよう</p>
               </div>
             ) : (
-              favoriteAnswers.map(({ answer: a, question: q, event: e }) => (
+              randomFavoriteAnswers.map(({ answer: a, question: q, event: e }) => (
                 <button
                   key={a.id}
                   onClick={() => onOpenAnswerDetail(q, a)}
