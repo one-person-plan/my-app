@@ -107,18 +107,29 @@ export function ListScreen({
     [events]
   );
 
-  const randomAnswers = useMemo(() => {
-    const all = events
-      .filter((e) => !isFuture(e.date))
-      .flatMap((e) => e.questions.flatMap((q) => q.answers.map((a) => ({ a, q, e }))));
-    const shuffled = [...all].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 3);
-  }, [events]);
-
   const randomFavoriteAnswers = useMemo(() => {
     const shuffled = [...favoriteAnswers].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 3);
   }, [favoriteAnswers]);
+
+  const randomNonFavoriteAnswers = useMemo(() => {
+    const favoriteIds = new Set(
+      randomFavoriteAnswers.map(({ answer }) => answer.id)
+    );
+  
+    const all = events
+      .filter((e) => !isFuture(e.date))
+      .flatMap((e) =>
+        e.questions.flatMap((q) =>
+          q.answers
+            .filter((a) => !favoriteIds.has(a.id))
+            .map((a) => ({ a, q, e }))
+        )
+      );
+  
+    const shuffled = [...all].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 3);
+  }, [events, randomFavoriteAnswers]);
 
   return (
     <div className="flex-1 overflow-y-auto pb-4">
@@ -176,13 +187,13 @@ export function ListScreen({
             sub="どんな一言が刺さった？"
           />
           <div className="space-y-2.5">
-            {randomAnswers.length === 0 && (
+            {randomNonFavoriteAnswers.length === 0 && (
               <div className="rounded-2xl border-2 border-dashed border-border-strong p-6 text-center">
                 <p className="text-sm text-muted">まだ回答がありません</p>
                 <p className="text-xs text-faint mt-1">しがむ画面からイベントを登録しよう</p>
               </div>
             )}
-            {randomAnswers.map(({ a, q, e }) => (
+            {randomNonFavoriteAnswers.map(({ a, q, e }) => (
               <button
                 key={a.id}
                 onClick={() => onOpenAnswerDetail(q, a)}
