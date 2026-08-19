@@ -126,8 +126,24 @@ function EventTopicItem({
                     : 'bg-surface-2 text-ink hover:bg-border'
                 }`}
               >
-                <p className="text-[10px] font-bold mb-0.5 opacity-70">お題</p>
-                {q.text}
+                <div className="flex items-center gap-3">
+                  {q.imageUrl && (
+                    <img
+                      src={q.imageUrl}
+                      alt=""
+                      className="w-16 h-16 rounded-lg object-cover shrink-0"
+                    />
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-bold mb-0.5 opacity-70">
+                      お題
+                    </p>
+                    <p className="leading-relaxed">
+                      {q.text || '画像のお題'}
+                    </p>
+                  </div>
+                </div>
               </button>
             );
           })}
