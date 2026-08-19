@@ -7,6 +7,7 @@ export function AnswerDetailScreen({
   event,
   onBack,
   onAnswerQuestion,
+  onOpenEvent,
   onShare,
 }: {
   question: OogiriQuestion;
@@ -14,6 +15,7 @@ export function AnswerDetailScreen({
   event?: OogiriEvent;
   onBack: () => void;
   onAnswerQuestion: (question: OogiriQuestion) => void;
+  onOpenEvent: (id: string) => void;
   onShare: () => void;
 }) {
   return (
@@ -120,6 +122,16 @@ export function AnswerDetailScreen({
             >
               <Share2 size={17} />
               Xで共有する
+            </button>
+          )}
+
+          {event && (
+            <button
+              onClick={() => onOpenEvent(event.id)}
+              className="w-full h-12 rounded-xl bg-surface border border-border text-ink font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface2 active:scale-[0.98] transition"
+            >
+              <MessageCircle size={17} />
+              この回のお題・回答を見る
             </button>
           )}
 

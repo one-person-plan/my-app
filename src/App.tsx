@@ -67,6 +67,7 @@ function Shell() {
             event={getEventForQuestion(answerDetail.question.id)}
             onBack={() => setAnswerDetail(undefined)}
             onAnswerQuestion={openAnswer}
+            onOpenEvent={openEvent}
             onShare={() => {
               const templates = loadTemplates();
               const event = getEventForQuestion(answerDetail.question.id);
