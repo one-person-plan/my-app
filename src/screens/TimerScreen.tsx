@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Timer as TimerIcon, Play, Pause, RotateCcw, ChevronDown, ChevronRight, MessageCircle, Clock } from 'lucide-react';
+import { Timer as TimerIcon, Play, Pause, RotateCcw, ChevronDown, ChevronRight, MessageCircle, Clock, Search } from 'lucide-react';
 import { useApp } from '@/store/AppContext';
 import { fmtShort, fmtDate } from '@/lib/date';
 import type { OogiriEvent, OogiriQuestion } from '@/data/types';
@@ -182,10 +182,12 @@ export function TimerScreen({
   const [finished, setFinished] = useState(false);
   const [answerText, setAnswerText] = useState('');
   const [timerEnabled, setTimerEnabled] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [answerCount, setAnswerCount] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
   const total = minutes * 60 + seconds;
+  const progress = total > 0 ? remaining / total : 0;
 
   useEffect(() => {
     setSelectedQuestion(initialQuestion);
@@ -265,11 +267,47 @@ export function TimerScreen({
     setFinished(false);
   };
 
-  const progress = total > 0 ? remaining / total : 0;
   const sortedEvents = useMemo(
-    () => [...events].sort((a, b) => (a.date < b.date ? 1 : -1)),
+    () =>
+      [...events]
+        .filter((event) => event.date <= new Date().toISOString().slice(0, 10))
+        .sort((a, b) => (a.date < b.date ? 1 : -1)),
     [events]
   );
+
+  const searchResults = useMemo<
+   { question: OogiriQuestion; event: OogiriEvent }[]
+  >(() => {
+   const keyword = searchText.trim().toLowerCase();
+
+   if (!keyword) return [];
+
+   return sortedEvents.flatMap((event) =>
+     event.questions
+       .filter((question) =>
+         question.text?.toLowerCase().includes(keyword)
+       )
+       .map((question) => ({
+         question,
+         event,
+       }))
+    );
+  }, [sortedEvents, searchText]);
+
+  const recentQuestion = useMemo(() => {
+    for (const event of sortedEvents) {
+      if (event.questions.length > 0) {
+        const shuffled = [...event.questions].sort(() => Math.random() - 0.5);
+  
+        return {
+          question: shuffled[0],
+          event,
+        };
+      }
+    }
+  
+    return undefined;
+  }, [sortedEvents]);
 
   return (
     <div className="flex-1 overflow-y-auto pb-4">
@@ -312,6 +350,57 @@ export function TimerScreen({
 
         {!selectedQuestion && (
          <div className="space-y-2.5">
+          {recentQuestion && (
+            <section className="mb-3">
+              <p className="text-xs font-bold text-muted mb-2 px-1">
+                最近のお題
+              </p>
+
+              <button
+                onClick={() => setSelectedQuestion(recentQuestion.question)}
+                className="w-full text-left bg-surface rounded-2xl p-3 border border-border shadow-sm active:scale-[0.98] transition"
+              >
+                <div className="flex items-center gap-3">
+                  {recentQuestion.question.imageUrl && (
+                    <img
+                      src={recentQuestion.question.imageUrl}
+                      alt=""
+                      className="w-20 h-20 rounded-xl object-cover shrink-0"
+                    />
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    {recentQuestion.question.text && (
+                      <p className="font-bold text-sm text-ink leading-relaxed">
+                        {recentQuestion.question.text}
+                      </p>
+                    )}
+
+                    <p className="text-[10px] text-muted mt-2 truncate">
+                      {recentQuestion.event.name}　{recentQuestion.event.date}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </section>
+          )}
+          
+          <div className="mb-3">
+            <div className="relative">
+              <Search
+                size={17}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-faint"
+              />
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="お題を検索"
+                className="w-full h-11 rounded-xl border border-border bg-surface pl-10 pr-3 text-sm text-ink placeholder:text-faint outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+              />
+            </div>
+          </div>
+
           {sortedEvents.length === 0 && (
             <div className="rounded-2xl border-2 border-dashed border-border-strong p-6 text-center">
               <p className="text-sm text-muted">イベントがありません</p>
@@ -319,14 +408,59 @@ export function TimerScreen({
             </div>
           )}
 
-          {sortedEvents.map((e) => (
-            <EventTopicItem
-              key={e.id}
-              event={e}
-              selectedQuestion={selectedQuestion}
-              onPick={(q) => setSelectedQuestion(q)}
-            />
-           ))}
+          {searchText.trim() ? (
+            searchResults.length > 0 ? (
+              <div className="space-y-2">
+                {searchResults.map(({ question, event }) => {
+
+                  return (
+                    <button
+                      key={`${event.id}-${question.id}`}
+                      onClick={() => setSelectedQuestion(question)}
+                      className="w-full text-left p-3 rounded-xl text-sm font-medium transition active:scale-[0.98] bg-surface border border-border text-ink hover:bg-surface-2"
+                    >
+                      <div className="flex items-center gap-3">
+                        {question.imageUrl && (
+                          <img
+                            src={question.imageUrl}
+                            alt=""
+                            className="w-16 h-16 rounded-lg object-cover shrink-0"
+                          />
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          {question.text && (
+                            <p className="leading-relaxed">
+                              {question.text}
+                            </p>
+                          )}
+
+                          <p className="text-[10px] text-faint mt-1">
+                            {event.name}　{event.date}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-2xl border-2 border-dashed border-border-strong p-6 text-center">
+                <p className="text-sm text-muted">
+                  該当するお題がありません
+                </p>
+              </div>
+            )
+          ) : (
+            sortedEvents.map((e) => (
+              <EventTopicItem
+                key={e.id}
+                event={e}
+                selectedQuestion={selectedQuestion}
+                onPick={(q) => setSelectedQuestion(q)}
+              />
+            ))
+          )}
          </div>
         )}
 
