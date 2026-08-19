@@ -139,9 +139,11 @@ function EventTopicItem({
                     <p className="text-[10px] font-bold mb-0.5 opacity-70">
                       お題
                     </p>
-                    <p className="leading-relaxed">
-                      {q.text || '画像のお題'}
-                    </p>
+                    {q.text && (
+                      <p className="leading-relaxed">
+                        {q.text}
+                      </p>
+                    )}
                   </div>
                 </div>
               </button>
@@ -283,8 +285,22 @@ export function TimerScreen({
 
           {selectedQuestion && (
             <div className="mb-3 rounded-2xl bg-primary-soft border border-primary/20 p-3.5 animate-pop">
-              <p className="text-[10px] font-bold text-primary mb-1">選択中のお題</p>
-              <p className="font-bold text-sm text-ink leading-relaxed">{selectedQuestion.text}</p>
+              <p className="text-[10px] font-bold text-primary mb-2">選択中のお題</p>
+
+                {selectedQuestion.imageUrl && (
+                  <img
+                    src={selectedQuestion.imageUrl}
+                    alt="お題画像"
+                    className="w-full max-h-48 object-cover rounded-xl mb-2"
+                  />
+                )}
+
+                {selectedQuestion.text && (
+                  <p className="font-bold text-sm text-ink leading-relaxed">
+                    {selectedQuestion.text}
+                  </p>
+                )}
+
               <button
                 onClick={() => setSelectedQuestion(undefined)}
                 className="text-[11px] text-primary font-bold mt-2 underline underline-offset-2"
