@@ -680,49 +680,34 @@ export function EventDetailScreen({
          </div>
        }
      >
-       <div className="space-y-4 pt-2">
-         <TextField
-           label="回答者名"
-           placeholder="例：山田"
-           value={ans.answerer}
-           onChange={(e) =>
-             setAns((a) => ({
-               ...a,
-               answerer: e.target.value,
-             }))
-           }
-           hint="※任意。省略すると「自分」になります"
-         />
+        <div className="space-y-4 pt-2">
+            <TextArea
+              label="回答"
+              placeholder="例：明日の自分への謝罪文"
+              value={ans.text}
+              onChange={(e) => setAns((a) => ({ ...a, text: e.target.value }))}
+            />
 
-        <TextArea
-          label="回答"
-          placeholder="例：明日の自分への謝罪文"
-          value={ans.text}
-          onChange={(e) =>
-            setAns((a) => ({
-              ...a,
-              text: e.target.value,
-            }))
-          }
-        />
+            <TextField
+              label="回答者名"
+              placeholder="例：山田"
+              value={ans.answerer}
+              onChange={(e) => setAns((a) => ({ ...a, answerer: e.target.value }))}
+              hint="※任意。省略すると「自分」になります"
+            />
 
-        <div>
-          <TextArea
-            label="自分の感想（しがみ）"
-            placeholder="例：刺さった。企画に困ったら使い回せそう。"
-            value={ans.impression}
-            onChange={(e) =>
-              setAns((a) => ({
-                ...a,
-                impression: e.target.value,
-              }))
-            }
-          />
-          <span className="block text-[11px] text-faint mt-1">
-            ※任意。あとで見返したときのヒントに
-          </span>
-        </div>
-       </div>
+            <div>
+              <TextArea
+                label="自分の感想（しがみ）"
+                placeholder="例：刺さった。企画に困ったら使い回せそう。"
+                value={ans.impression}
+                onChange={(e) => setAns((a) => ({ ...a, impression: e.target.value }))}
+              />
+              <span className="block text-[11px] text-faint mt-1">
+                ※任意。あとで見返したときのヒントに
+              </span>
+            </div>
+         </div>
       </BottomSheet>
 
       {/* add answer sheet */}
@@ -742,27 +727,31 @@ export function EventDetailScreen({
         }
       >
         <div className="space-y-4 pt-2">
-          <TextField
-            label="回答者名"
-            placeholder="例：山田"
-            value={ans.answerer}
-            onChange={(e) => setAns((a) => ({ ...a, answerer: e.target.value }))}
-            hint="※任意。省略すると「自分」になります"
+         <TextArea
+           label="回答"
+           placeholder="例：明日の自分への謝罪文"
+           value={ans.text}
+           onChange={(e) => setAns((a) => ({ ...a, text: e.target.value }))}
           />
-          <TextArea
-            label="回答"
-            placeholder="例：明日の自分への謝罪文"
-            value={ans.text}
-            onChange={(e) => setAns((a) => ({ ...a, text: e.target.value }))}
+
+         <TextField
+           label="回答者名"
+           placeholder="例：山田"
+           value={ans.answerer}
+           onChange={(e) => setAns((a) => ({ ...a, answerer: e.target.value }))}
+           hint="※任意。省略すると「自分」になります"
           />
-          <div>
-            <TextArea
+
+         <div>
+           <TextArea
               label="自分の感想（しがみ）"
               placeholder="例：刺さった。企画に困ったら使い回せそう。"
               value={ans.impression}
               onChange={(e) => setAns((a) => ({ ...a, impression: e.target.value }))}
             />
-            <span className="block text-[11px] text-faint mt-1">※任意。あとで見返したときのヒントに</span>
+           <span className="block text-[11px] text-faint mt-1">
+             ※任意。あとで見返したときのヒントに
+           </span>
           </div>
         </div>
       </BottomSheet>
