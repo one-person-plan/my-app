@@ -94,20 +94,14 @@ export function EventDetailScreen({
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-    const shareToX = (q: OogiriQuestion, a: OogiriAnswer) => {
-      const postText = buildPostText(
-        q.imageUrl ? templates.imageTemplate : templates.textTemplate,
-        {
-          question: q.text || '画像のお題',
-          name: a.answerer,
-          answer: a.text,
-          hashtag: ev.hashtag,
-        }
-      );
-    
-      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`;
-    
-      window.open(url, '_blank');
+    const shareToX = (
+      q: OogiriQuestion,
+      a: OogiriAnswer
+    ) => {
+      setShareTarget({
+        question: q,
+        answer: a,
+      });
     };
     const openEditSheet = () => {
       const [start = '', end = ''] = ev.time?.split('〜') ?? [];
@@ -199,10 +193,69 @@ export function EventDetailScreen({
     setEditingAnswer(null);
   };
 
+  const compressImage = (
+    file: File,
+    maxSize = 1280,
+    quality = 0.8
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onerror = () => reject(reader.error);
+  
+      reader.onload = () => {
+        const img = new Image();
+  
+        img.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
+  
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+  
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = Math.round((height * maxSize) / width);
+              width = maxSize;
+            } else {
+              width = Math.round((width * maxSize) / height);
+              height = maxSize;
+            }
+          }
+  
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+  
+          const ctx = canvas.getContext('2d');
+  
+          if (!ctx) {
+            reject(new Error('Canvasを取得できませんでした'));
+            return;
+          }
+  
+          ctx.drawImage(img, 0, 0, width, height);
+  
+          resolve(
+            canvas.toDataURL('image/jpeg', quality)
+          );
+        };
+  
+        img.src = reader.result as string;
+      };
+  
+      reader.readAsDataURL(file);
+    });
+  };
+
   const onPickImage = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => setQImage(reader.result as string);
-    reader.readAsDataURL(file);
+    compressImage(file)
+      .then((compressed) => {
+        setQImage(compressed);
+      })
+      .catch((error) => {
+        console.error('画像の圧縮に失敗しました:', error);
+        alert('画像の読み込みに失敗しました。');
+      });
   };
 
   const header = (
@@ -584,15 +637,20 @@ export function EventDetailScreen({
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        setEditQuestionImage(reader.result as string);
-                      };
-                      reader.readAsDataURL(file);
-                    }
+
+                    if (!file) return;
+
+                    compressImage(file)
+                      .then((compressed) => {
+                        setEditQuestionImage(compressed);
+                      })
+                      .catch((error) => {
+                        console.error('画像の圧縮に失敗しました:', error);
+                        alert('画像の読み込みに失敗しました。');
+                      });
                   }}
                 />
+
               </label>
             )}
          </div>
@@ -775,7 +833,11 @@ export function EventDetailScreen({
                   q.imageUrl ? templates.imageTemplate : templates.textTemplate,
                   { question: q.text, name: a.answerer, answer: a.text, hashtag: ev.hashtag }
                 );
-                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`, '_blank');
+                window.open(
+                  `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`,
+                  '_blank',
+                  'noopener,noreferrer'
+                );
               }}
             >
               Xの投稿画面を開く
@@ -816,7 +878,7 @@ export function EventDetailScreen({
                   onClick={() => {
                     const link = document.createElement('a');
                     link.href = shareTarget.question.imageUrl!;
-                    link.download = `oogiri-${shareTarget.answer.answerer}.png`;
+                    link.download = `oogiri-${shareTarget.answer.answerer}.jpg`;
                     link.click();
                   }}
                 >

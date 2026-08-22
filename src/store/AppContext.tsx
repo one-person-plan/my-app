@@ -18,20 +18,15 @@ import {
   loadFavoriteKeys,
   saveFavoriteKeys,
 } from '@/lib/favorites';
+import {
+  loadEventsFromDB,
+  saveEventsToDB,
+} from '@/lib/db';
 
 export interface FavoriteAnswer {
   event: OogiriEvent;
   question: OogiriQuestion;
   answer: OogiriAnswer;
-}
-
-const EVENTS_STORAGE_KEY = 'oogiri-events';
-const EVENTS_STORAGE_VERSION = 1;
-
-interface StoredEvents {
-  version: number;
-  savedAt: number;
-  events: OogiriEvent[];
 }
 
 function applyFavoriteKeys(
@@ -65,59 +60,6 @@ function isValidEvents(value: unknown): value is OogiriEvent[] {
       typeof event.date === 'string' &&
       Array.isArray(event.questions)
   );
-}
-
-/**
- * localStorageからイベントを読み込む
- */
-function loadEvents(): OogiriEvent[] {
-  const favoriteKeys = loadFavoriteKeys();
-
-  try {
-    const saved = localStorage.getItem(EVENTS_STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      // 新しい保存形式
-      if (
-        parsed &&
-        typeof parsed === 'object' &&
-        'events' in parsed
-      ) {
-        const stored = parsed as StoredEvents;
-
-        if (isValidEvents(stored.events)) {
-          console.log(
-            `イベントデータを読み込みました（保存日時: ${
-              stored.savedAt
-                ? new Date(stored.savedAt).toLocaleString()
-                : '不明'
-            }）`
-          );
-
-          return applyFavoriteKeys(stored.events, favoriteKeys);
-        }
-      }
-
-      // 以前の形式（イベント配列だけ保存していた場合）
-      if (isValidEvents(parsed)) {
-        console.log('旧形式のイベントデータを読み込みました');
-        return applyFavoriteKeys(parsed, favoriteKeys);
-      }
-    }
-  } catch (error) {
-    console.error(
-      'イベントデータの読み込みに失敗しました:',
-      error
-    );
-  }
-
-  console.warn(
-    '保存データが見つからないため、初期データを使用します'
-  );
-
-  return applyFavoriteKeys(initialEvents, favoriteKeys);
 }
 
 interface AppState {
@@ -207,55 +149,96 @@ export function AppProvider({
   children: ReactNode;
 }) {
 
-  const [events, setEvents] = useState<OogiriEvent[]>(
-    () => loadEvents()
-  );
+  const [events, setEvents] = useState<OogiriEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  /**
-   * イベントデータを保存する
-   *
-   * メイン保存 + バックアップ保存の2段構成
-   */
   useEffect(() => {
-    const data: StoredEvents = {
-      version: EVENTS_STORAGE_VERSION,
-      savedAt: Date.now(),
-      events,
-    };
-  
-    const serialized = JSON.stringify(data);
-  
-    try {
-      localStorage.setItem(
-        EVENTS_STORAGE_KEY,
-        serialized
-      );
-  
-      const saved = localStorage.getItem(
-        EVENTS_STORAGE_KEY
-      );
-  
-      if (saved !== serialized) {
-        throw new Error(
-          '保存後のデータ確認に失敗しました'
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const savedEvents = await loadEventsFromDB();
+
+        if (cancelled) return;
+
+        if (savedEvents !== null) {
+          setEvents(
+            applyFavoriteKeys(
+              savedEvents,
+              loadFavoriteKeys()
+            )
+          );
+        } else {
+          setEvents(
+            applyFavoriteKeys(
+              initialEvents,
+              loadFavoriteKeys()
+            )
+          );
+        }
+      } catch (error) {
+        console.error(
+          'IndexedDBからイベントデータを読み込めませんでした:',
+          error
         );
+
+        if (!cancelled) {
+          setEvents(
+            applyFavoriteKeys(
+              initialEvents,
+              loadFavoriteKeys()
+            )
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
-  
-      console.log(
-        `イベントデータを保存しました（${events.length}件）`
-      );
-    } catch (error) {
-      console.error(
-        'イベントデータの保存に失敗しました:',
-        error
-      );
-  
-      alert(
-        'データの保存に失敗しました。\n\n' +
-          'お題画像などのデータ量が大きすぎる可能性があります。'
-      );
-    }
-  }, [events]);
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    let cancelled = false;
+
+    const save = async () => {
+      try {
+        await saveEventsToDB(events);
+
+        if (!cancelled) {
+          console.log(
+            `IndexedDBにイベントデータを保存しました（${events.length}件）`
+          );
+        }
+      } catch (error) {
+        console.error(
+          'IndexedDBへのイベントデータ保存に失敗しました:',
+          error
+        );
+
+        if (!cancelled) {
+          alert(
+            'データの保存に失敗しました。\n\n' +
+              'ブラウザのストレージ容量が不足している可能性があります。'
+          );
+        }
+      }
+    };
+
+    save();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [events, isLoading]);
 
   const addEvent: AppState['addEvent'] = (e) => {
     setEvents((prev) => [
