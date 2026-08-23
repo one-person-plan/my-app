@@ -72,6 +72,7 @@ interface AppState {
     date: string;
     time?: string;
     hashtag?: string;
+    url?: string;
     memo?: string;
   }) => void;
 
@@ -248,6 +249,7 @@ export function AppProvider({
         date: e.date,
         time: e.time,
         hashtag: e.hashtag,
+        url: e.url,
         memo: e.memo,
         questions: [],
         createdAt: Date.now(),

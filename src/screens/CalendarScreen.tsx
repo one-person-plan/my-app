@@ -92,6 +92,7 @@ export function CalendarScreen({ onOpenEvent }: { onOpenEvent: (id: string) => v
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [hashtag, setHashtag] = useState('');
+  const [url, setUrl] = useState('');
 
   const eventDates = useMemo(() => new Set(events.map((e) => e.date)), [events]);
   const dayEvents = eventsByDate(selected);
@@ -125,6 +126,7 @@ export function CalendarScreen({ onOpenEvent }: { onOpenEvent: (id: string) => v
       date: selected,
       time: startTime && endTime ? `${startTime}~${endTime}` : undefined,
       hashtag: hashtag.trim() ? (hashtag.trim().startsWith('#') ? hashtag.trim() : `#${hashtag.trim()}`) : undefined,
+      url: url.trim() || undefined,
     });
     setSheetOpen(false);
   };
@@ -285,6 +287,14 @@ export function CalendarScreen({ onOpenEvent }: { onOpenEvent: (id: string) => v
             value={hashtag}
             onChange={(e) => setHashtag(e.target.value)}
             hint="※任意。# は自動で付きます"
+          />
+          <TextField
+            label="イベントページURL"
+            placeholder="例：https://twipla.jp/events/xxxxx"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            type="url"
+            hint="※任意。TwiPlaなどのイベントページ"
           />
           <div className="rounded-2xl bg-accent-soft p-3.5 text-[11px] text-accent-dark font-medium leading-relaxed">
             未来のイベントは、お題を入力しなくても保存できます。予定として残しておきましょう。

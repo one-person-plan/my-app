@@ -58,6 +58,7 @@ export function EventDetailScreen({
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const [editHashtag, setEditHashtag] = useState('');
+  const [editUrl, setEditUrl] = useState('');
   const [editMemo, setEditMemo] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [answerSheet, setAnswerSheet] = useState<string | null>(null); // questionId
@@ -111,6 +112,7 @@ export function EventDetailScreen({
       setEditStartTime(start);
       setEditEndTime(end);
       setEditHashtag(ev.hashtag ?? '');
+      setEditUrl(ev.url ?? '');
       setEditMemo(ev.memo ?? '');
       setEditSheet(true);
     };
@@ -130,6 +132,7 @@ export function EventDetailScreen({
             ? editHashtag.trim()
             : `#${editHashtag.trim()}`
           : undefined,
+        url: editUrl.trim() || undefined,
         memo: editMemo.trim() || undefined,
       });
     
@@ -306,6 +309,17 @@ export function EventDetailScreen({
               <span className="flex items-center gap-0.5 text-accent font-bold">
                 <Hash size={13} /> {ev.hashtag.replace('#', '')}
               </span>
+            )}
+            {ev.url && (
+              <a
+                href={ev.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-primary font-bold hover:underline"
+              >
+                <Share2 size={13} />
+                イベントページ
+              </a>
             )}
             <span className="flex items-center gap-1.5 text-faint font-medium ml-auto">
               <MessageCircle size={13} /> お題{ev.questions.length} / 回答{answerCount}
@@ -560,6 +574,15 @@ export function EventDetailScreen({
             value={editHashtag}
             onChange={(e) => setEditHashtag(e.target.value)}
             hint="※任意。# は自動で付きます"
+          />
+
+          <TextField
+            label="イベントページURL"
+            placeholder="例：https://twipla.jp/events/xxxxx"
+            value={editUrl}
+            onChange={(e) => setEditUrl(e.target.value)}
+            type="url"
+            hint="※任意。TwiPlaなどのイベントページ"
           />
 
           <TextArea
