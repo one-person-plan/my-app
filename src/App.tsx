@@ -12,7 +12,7 @@ import { SettingsScreen } from '@/screens/SettingsScreen';
 import { loadTemplates, buildPostText } from '@/lib/templates';
 import { FavoriteAnswersScreen } from '@/screens/FavoriteAnswersScreen';
 import { AllAnswersScreen } from '@/screens/AllAnswersScreen';
-
+import { PastEventsScreen } from '@/screens/PastEventsScreen'
 
 function Shell() {
   const { events, toggleFavorite } = useApp();
@@ -22,6 +22,7 @@ function Shell() {
   const [favoriteAnswersOpen, setFavoriteAnswersOpen] = useState(false);
   const [allAnswersOpen, setAllAnswersOpen] = useState(false);
   const [answerDetailFromFavorites, setAnswerDetailFromFavorites] = useState(false);
+  const [pastEventsOpen, setPastEventsOpen] = useState(false);
   const [answerQuestion, setAnswerQuestion] = useState<OogiriQuestion | undefined>();
   const [answerDetail, setAnswerDetail] = useState<{
     question: OogiriQuestion;
@@ -30,6 +31,8 @@ function Shell() {
 
   const openEvent = (id: string) => {
     setFavoriteAnswersOpen(false);
+    setAllAnswersOpen(false);
+    setPastEventsOpen(false);
     setAnswerDetailFromFavorites(false);
     setOpenEventId(id);
   };
@@ -158,6 +161,11 @@ function Shell() {
             onBack={() => setAllAnswersOpen(false)}
             onOpenAnswerDetail={openAnswerDetail}
           />
+        ) : pastEventsOpen ? (
+          <PastEventsScreen
+            onBack={() => setPastEventsOpen(false)}
+            onOpenEvent={openEvent}
+          />
         ) : settingsOpen ? (
           <SettingsScreen
             onBack={() =>
@@ -179,6 +187,7 @@ function Shell() {
                     setFavoriteAnswersOpen(true);
                   }}
                   onOpenAllAnswers={() => setAllAnswersOpen(true)}
+                  onOpenPastEvents={() => setPastEventsOpen(true)}
                />
               )}
               {tab === 'calendar' && <CalendarScreen onOpenEvent={openEvent} />}
