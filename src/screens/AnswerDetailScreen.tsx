@@ -1,4 +1,4 @@
-import { ArrowLeft, Quote, MessageCircle, User, PenLine, Share2 } from 'lucide-react';
+import { ArrowLeft, Quote, MessageCircle, User, PenLine, Share2, Star } from 'lucide-react';
 import type { OogiriQuestion, OogiriAnswer, OogiriEvent } from '@/data/types';
 
 export function AnswerDetailScreen({
@@ -9,6 +9,7 @@ export function AnswerDetailScreen({
   onAnswerQuestion,
   onOpenEvent,
   onShare,
+  onToggleFavorite,
 }: {
   question: OogiriQuestion;
   answer: OogiriAnswer;
@@ -17,6 +18,7 @@ export function AnswerDetailScreen({
   onAnswerQuestion: (question: OogiriQuestion) => void;
   onOpenEvent: (id: string) => void;
   onShare: () => void;
+  onToggleFavorite: () => void;
 }) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -60,9 +62,25 @@ export function AnswerDetailScreen({
 
           {/* 回答 */}
           <section className="bg-surface rounded-2xl p-5 border border-border shadow-sm">
-            <div className="flex items-center gap-1.5 text-[11px] text-accent font-bold mb-3">
-              <PenLine size={13} />
-              回答
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5 text-[11px] text-accent font-bold">
+                <PenLine size={13} />
+                回答
+              </div>
+
+              <button
+                onClick={onToggleFavorite}
+                className="flex items-center gap-1 text-xs font-bold active:scale-90 transition"
+              >
+                <Star
+                  size={18}
+                  fill={answer.favorite ? 'currentColor' : 'none'}
+                  className={answer.favorite ? 'text-gold' : 'text-faint'}
+                />
+                <span className={answer.favorite ? 'text-gold' : 'text-faint'}>
+                  {answer.favorite ? 'ベスト回答を解除' : 'ベスト回答に追加'}
+                </span>
+              </button>
             </div>
 
             <p className="font-bold text-lg text-ink leading-relaxed">

@@ -6,7 +6,7 @@ import type { OogiriAnswer, OogiriEvent, OogiriQuestion } from '@/data/types';
 
 function SectionTitle({ icon, title, sub }: { icon: React.ReactNode; title: string; sub?: string }) {
   return (
-    <div className="flex items-center gap-2 mb-3 px-1">
+    <div className="flex items-center gap-2 px-1">
       <div className="w-7 h-7 rounded-xl bg-surface flex items-center justify-center text-primary shadow-sm border border-border">
         {icon}
       </div>
@@ -88,6 +88,8 @@ export function ListScreen({
   onOpenEvent,
   onAnswerQuestion,
   onOpenAnswerDetail,
+  onOpenFavoriteAnswers,
+  onOpenAllAnswers,
 }: {
   onOpenEvent: (id: string) => void;
   onAnswerQuestion: (question: OogiriQuestion) => void;
@@ -95,6 +97,8 @@ export function ListScreen({
     question: OogiriQuestion,
     answer: OogiriAnswer
   ) => void;
+  onOpenFavoriteAnswers: () => void;
+  onOpenAllAnswers: () => void;
 }) {
   const { events, favoriteAnswers } = useApp();
 
@@ -136,11 +140,33 @@ export function ListScreen({
       <div className="px-4 pt-4 space-y-7">
         {/* best answers */}
         <section className="animate-fade-in">
-          <SectionTitle
-            icon={<Star size={15} strokeWidth={2.5} fill="currentColor" />}
-            title="ベスト回答"
-            sub={favoriteAnswers.length > 0 ? `${favoriteAnswers.length}件` : undefined}
-          />
+          <div className="flex items-center justify-between mb-3">
+            <SectionTitle
+              icon={
+                <Star
+                  size={15}
+                  strokeWidth={2.5}
+                  fill="currentColor"
+                />
+              }
+              title="ベスト回答"
+              sub={
+                favoriteAnswers.length > 0
+                  ? `${favoriteAnswers.length}件`
+                  : undefined
+              }
+            />
+
+            {favoriteAnswers.length > 0 && (
+              <button
+                onClick={onOpenFavoriteAnswers}
+                className="shrink-0 flex items-center gap-0.5 text-xs font-bold text-primary active:scale-95 transition"
+              >
+                すべて見る
+                <ChevronRight size={14} />
+              </button>
+            )}
+          </div>
           <div className="space-y-2.5">
             {favoriteAnswers.length === 0 ? (
               <div className="rounded-2xl border-2 border-dashed border-border-strong p-6 text-center">
@@ -181,11 +207,23 @@ export function ListScreen({
 
         {/* hero: today's one-liners */}
         <section className="animate-fade-in">
-          <SectionTitle
-            icon={<Quote size={15} strokeWidth={2.5} />}
-            title="今日のしがみ"
-            sub="どんな一言が刺さった？"
-          />
+          <div className="flex items-center justify-between mb-3">
+            <SectionTitle
+              icon={<Quote size={15} strokeWidth={2.5} />}
+              title="今日のしがみ"
+              sub="どんな一言が刺さった？"
+            />
+
+            {randomNonFavoriteAnswers.length > 0 && (
+              <button
+                onClick={onOpenAllAnswers}
+                className="shrink-0 flex items-center gap-0.5 text-xs font-bold text-primary active:scale-95 transition"
+              >
+                すべて見る
+                <ChevronRight size={14} />
+              </button>
+            )}
+          </div>
           <div className="space-y-2.5">
             {randomNonFavoriteAnswers.length === 0 && (
               <div className="rounded-2xl border-2 border-dashed border-border-strong p-6 text-center">

@@ -10,20 +10,29 @@ import { EventDetailScreen } from '@/screens/EventDetailScreen';
 import { AnswerDetailScreen } from '@/screens/AnswerDetailScreen';
 import { SettingsScreen } from '@/screens/SettingsScreen';
 import { loadTemplates, buildPostText } from '@/lib/templates';
+import { FavoriteAnswersScreen } from '@/screens/FavoriteAnswersScreen';
+import { AllAnswersScreen } from '@/screens/AllAnswersScreen';
 
 
 function Shell() {
-  const {events} = useApp();
+  const { events, toggleFavorite } = useApp();
   const [tab, setTab] = useState<TabKey>('list');
   const [openEventId, setOpenEventId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [favoriteAnswersOpen, setFavoriteAnswersOpen] = useState(false);
+  const [allAnswersOpen, setAllAnswersOpen] = useState(false);
+  const [answerDetailFromFavorites, setAnswerDetailFromFavorites] = useState(false);
   const [answerQuestion, setAnswerQuestion] = useState<OogiriQuestion | undefined>();
   const [answerDetail, setAnswerDetail] = useState<{
     question: OogiriQuestion;
     answer: OogiriAnswer;
   } | undefined>();
 
-  const openEvent = (id: string) => setOpenEventId(id);
+  const openEvent = (id: string) => {
+    setFavoriteAnswersOpen(false);
+    setAnswerDetailFromFavorites(false);
+    setOpenEventId(id);
+  };
 
   const openAnswer = (question: OogiriQuestion) => {
     setAnswerQuestion(question);
@@ -38,12 +47,37 @@ function Shell() {
     );
   };
   
+  const getAnswerForDetail = (
+    questionId: string,
+    answerId: string
+  ): OogiriAnswer | undefined => {
+    const event = events.find((event) =>
+      event.questions.some((question) => question.id === questionId)
+    );
+  
+    return event?.questions
+      .find((question) => question.id === questionId)
+      ?.answers.find((answer) => answer.id === answerId);
+  };
+
   const openAnswerDetail = (
     question: OogiriQuestion,
     answer: OogiriAnswer
   ) => {
     setAnswerDetail({ question, answer });
+    setAnswerDetailFromFavorites(false);
     setOpenEventId(null);
+    setFavoriteAnswersOpen(false);
+  };
+
+  const openFavoriteAnswerDetail = (
+    question: OogiriQuestion,
+    answer: OogiriAnswer
+  ) => {
+    setAnswerDetail({ question, answer });
+    setAnswerDetailFromFavorites(true);
+    setOpenEventId(null);
+    setFavoriteAnswersOpen(false);
   };
  
   const back = () => setOpenEventId(null);
@@ -57,15 +91,27 @@ function Shell() {
             eventId={openEventId}
             onBack={back}
             onOpenAnswer={openAnswer}
-          
-          onOpenAnswerDetail={openAnswerDetail}
+            onOpenAnswerDetail={openAnswerDetail}
           />
         ) : answerDetail ? (
           <AnswerDetailScreen
             question={answerDetail.question}
-            answer={answerDetail.answer}
+            answer={
+              getAnswerForDetail(
+                answerDetail.question.id,
+                answerDetail.answer.id
+              ) ?? answerDetail.answer
+            }
             event={getEventForQuestion(answerDetail.question.id)}
-            onBack={() => setAnswerDetail(undefined)}
+            onBack={() => {
+              setAnswerDetail(undefined);
+            
+              if (answerDetailFromFavorites) {
+                setFavoriteAnswersOpen(true);
+              }
+            
+              setAnswerDetailFromFavorites(false);
+            }}
             onAnswerQuestion={openAnswer}
             onOpenEvent={openEvent}
             onShare={() => {
@@ -88,6 +134,29 @@ function Shell() {
             
               window.open(url, '_blank');
             }}
+            onToggleFavorite={() => {
+              if (!answerDetail) return;
+            
+              const event = getEventForQuestion(answerDetail.question.id);
+            
+              if (!event) return;
+            
+              toggleFavorite(
+                event.id,
+                answerDetail.question.id,
+                answerDetail.answer.id
+              );
+            }}
+          />
+        ) : favoriteAnswersOpen ? (
+          <FavoriteAnswersScreen
+            onBack={() => setFavoriteAnswersOpen(false)}
+            onOpenAnswerDetail={openFavoriteAnswerDetail}
+          />
+        ) : allAnswersOpen ? (
+          <AllAnswersScreen
+            onBack={() => setAllAnswersOpen(false)}
+            onOpenAnswerDetail={openAnswerDetail}
           />
         ) : settingsOpen ? (
           <SettingsScreen
@@ -106,6 +175,10 @@ function Shell() {
                   onOpenEvent={openEvent}
                   onAnswerQuestion={openAnswer}
                   onOpenAnswerDetail={openAnswerDetail}
+                  onOpenFavoriteAnswers={() => {
+                    setFavoriteAnswersOpen(true);
+                  }}
+                  onOpenAllAnswers={() => setAllAnswersOpen(true)}
                />
               )}
               {tab === 'calendar' && <CalendarScreen onOpenEvent={openEvent} />}
