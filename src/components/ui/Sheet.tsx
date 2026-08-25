@@ -1,5 +1,6 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { Keyboard } from '@capacitor/keyboard';
 
 interface BottomSheetProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface BottomSheetProps {
 }
 
 export function BottomSheet({ open, onClose, title, children, footer }: BottomSheetProps) {
+  const sheetRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -17,16 +19,43 @@ export function BottomSheet({ open, onClose, title, children, footer }: BottomSh
     return () => window.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) return;
+  
+    const timer = window.setTimeout(async () => {
+      const input = sheetRef.current?.querySelector(
+        'input, textarea'
+      ) as HTMLInputElement | HTMLTextAreaElement | null;
+  
+      if (!input) return;
+  
+      input.focus();
+  
+      await Keyboard.show();
+    }, 500);
+  
+    return () => window.clearTimeout(timer);
+  }, [open]);
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 flex flex-col justify-end"
+      role="dialog"
+      aria-modal="true"
+    >
       <button
         aria-label="閉じる"
         onClick={onClose}
         className="absolute inset-0 bg-ink/40 backdrop-blur-sm animate-fade-in"
       />
-      <div className="relative bg-surface w-full max-h-[88%] flex flex-col rounded-t-3xl border-t border-border-strong animate-slide-up overflow-hidden">
+      <div
+        ref={sheetRef}
+        className="relative bg-surface w-full max-h-[88dvh] flex flex-col rounded-t-3xl border-t border-border-strong animate-slide-up overflow-hidden"
+        style={{
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
         <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
           <div className="w-10 h-1 rounded-full bg-border-strong mx-auto absolute left-1/2 -translate-x-1/2 top-2" />
           <h2 className="text-base font-bold text-ink font-display tracking-tight mt-2">{title}</h2>
@@ -37,7 +66,9 @@ export function BottomSheet({ open, onClose, title, children, footer }: BottomSh
             <X size={18} />
           </button>
         </div>
-        <div className="px-5 pb-3 overflow-y-auto flex-1">{children}</div>
+        <div className="px-5 pb-3 overflow-y-auto flex-1 min-h-0">
+          {children}
+        </div>
         {footer && <div className="px-5 py-4 border-t border-border bg-surface/95 backdrop-blur shrink-0">{footer}</div>}
       </div>
     </div>

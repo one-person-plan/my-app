@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Shigamoo!</string>
+    <string name="title_activity_main">Shigamoo!</string>
+    <string name="package_name">com.shigamoo.app</string>
+    <string name="custom_url_scheme">com.shigamoo.app</string>
+</resources>
