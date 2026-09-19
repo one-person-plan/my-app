@@ -390,107 +390,33 @@ export function EventDetailScreen({
                     </button>
 
                     {open && (
-                      <div className="px-4 pb-4 pt-1 border-t border-border space-y-2.5 animate-fade-in">
-                        {q.answers.length === 0 ? (
-                          <p className="text-xs text-faint text-center py-3">回答を追加してください</p>
-                        ) : (
-                          q.answers.map((a) => (
-                            <div key={a.id} className="rounded-xl bg-surface-2 p-3">
-                              <div className="flex items-start gap-2">
-                                <button
-                                  onClick={() => toggleFavorite(ev.id, q.id, a.id)}
-                                  className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition active:scale-90 ${
-                                    a.favorite
-                                      ? 'bg-gold-soft text-gold'
-                                      : 'bg-surface text-faint hover:text-gold hover:bg-gold-soft/60'
-                                  }`}
-                                  aria-label={a.favorite ? 'お気に入りを解除' : 'お気に入りに追加'}
-                                >
-                                  <Star size={16} fill={a.favorite ? 'currentColor' : 'none'} />
-                                </button>  
-                                <button
-                                  onClick={() => {
-                                    if (a.source !== 'answer') {
-                                      shareToX(q, a);
-                                    } else {
-                                      onOpenAnswerDetail(q, a);
-                                    }
-                                  }}
-                                  className="flex-1 min-w-0 text-left active:scale-[0.99] transition"
-                                >
-                                  <p className="font-bold text-sm text-ink leading-relaxed">「{a.text}」</p>
-                                  <p className="text-[11px] text-muted mt-1.5 font-medium">{a.answerer}</p>
-                                  {a.impression && (
-                                    <div className="mt-2 pt-2 border-t border-border flex items-start gap-1.5">
-                                      <Quote size={12} className="text-accent shrink-0 mt-0.5" />
-                                      <p className="text-xs text-muted italic leading-relaxed">{a.impression}</p>
-                                    </div>
-                                  )}
-                                  {a.source !== 'answer' && (
-                                      <span className="inline-flex items-center gap-1 text-[10px] text-accent font-bold mt-2.5">
-                                        <Share2 size={11} /> タップしてXに共有
-                                      </span>
-                                    )
-                                  }
-                                </button>
-                              </div>
-                             <div className="flex justify-end gap-1 mt-1.5 pt-1.5 border-t border-border">
-                              <button
-                                 onClick={() => {
-                                  setAns({
-                                    answerer: a.answerer,
-                                    text: a.text,
-                                    impression: a.impression ?? '',
-                                  });
-                                  setEditingAnswer({
-                                   questionId: q.id,
-                                   answerId: a.id,
-                                  });
-                                }}
-                               className="text-faint hover:text-primary transition p-1"
-                               aria-label="回答を編集"
-                              >
-                               <Pencil size={14} />
-                              </button>
+                    <div className="px-4 pb-4 pt-3 border-t border-border space-y-2.5 animate-fade-in">
 
-                              <button
-                                onClick={() => setConfirm({ type: 'answer', id: a.id })}
-                                className="text-faint hover:text-error transition p-1"
-                                aria-label="回答を削除"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </div>
-                          ))
-                        )}
+                      {/* お題に対する操作 */}
+                      <button
+                        onClick={() => {
+                          setAnswerSheet(q.id);
+                          setAns({ answerer: '', text: '', impression: '' });
+                        }}
+                        className="w-full h-12 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-dark active:scale-[0.98] transition shadow-md shadow-primary/20"
+                      >
+                        <Plus size={17} strokeWidth={3} />
+                        回答を追加
+                      </button>
 
-                        {/* 回答を追加：このアプリのメイン操作 */}
+                      <div className="flex gap-2">
                         <button
-                          onClick={() => {
-                            setAnswerSheet(q.id);
-                            setAns({ answerer: '', text: '', impression: '' });
-                          }}
-                          className="w-full h-12 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-dark active:scale-[0.98] transition shadow-md shadow-primary/20"
+                          onClick={() => onOpenAnswer(q)}
+                          className="flex-1 h-10 rounded-xl bg-surface-2 text-muted font-bold text-xs flex items-center justify-center gap-1 hover:text-primary active:scale-95 transition"
                         >
-                          <Plus size={17} strokeWidth={3} />
-                          回答を追加
+                          <MessageCircle size={14} />
+                          このお題で答える
                         </button>
 
-                        {/* 副次操作 */}
-                        <div className="flex gap-2 pt-1">
-                          <button
-                            onClick={() => onOpenAnswer(q)}
-                            className="flex-1 h-10 rounded-xl bg-surface-2 text-muted font-bold text-xs flex items-center justify-center gap-1 hover:text-primary active:scale-95 transition"
-                          >
-                            <MessageCircle size={14} />
-                            このお題で答える
-                          </button>
-
-                          <button
-                            onClick={() => openQuestionEdit(q)}
-                            className="flex-1 h-10 rounded-xl bg-surface-2 text-muted font-bold text-xs flex items-center justify-center gap-1 hover:text-primary active:scale-95 transition"
-                          >
+                        <button
+                          onClick={() => openQuestionEdit(q)}
+                          className="flex-1 h-10 rounded-xl bg-surface-2 text-muted font-bold text-xs flex items-center justify-center gap-1 hover:text-primary active:scale-95 transition"
+                        >
                           <Pencil size={14} />
                           お題を編集
                         </button>
@@ -498,10 +424,105 @@ export function EventDetailScreen({
                         <button
                           onClick={() => setConfirm({ type: 'question', id: q.id })}
                           className="w-10 h-10 rounded-xl bg-surface-2 text-faint hover:text-error flex items-center justify-center transition"
+                          aria-label="お題を削除"
                         >
                           <Trash2 size={14} />
                         </button>
                       </div>
+
+                      {/* 回答一覧 */}
+                      {q.answers.length === 0 ? (
+                        <p className="text-xs text-faint text-center py-3">
+                          回答を追加してください
+                        </p>
+                      ) : (
+                        q.answers.map((a) => (
+                          <div key={a.id} className="rounded-xl bg-surface-2 p-3">
+                            <div className="flex items-start gap-2">
+
+                              <button
+                                onClick={() => toggleFavorite(ev.id, q.id, a.id)}
+                                className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition active:scale-90 ${
+                                  a.favorite
+                                    ? 'bg-gold-soft text-gold'
+                                    : 'bg-surface text-faint hover:text-gold hover:bg-gold-soft/60'
+                                }`}
+                                aria-label={a.favorite ? 'お気に入りを解除' : 'お気に入りに追加'}
+                              >
+                                <Star
+                                  size={16}
+                                  fill={a.favorite ? 'currentColor' : 'none'}
+                                />
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  if (a.source !== 'answer') {
+                                    shareToX(q, a);
+                                  } else {
+                                    onOpenAnswerDetail(q, a);
+                                  }
+                                }}
+                                className="flex-1 min-w-0 text-left active:scale-[0.99] transition"
+                              >
+                                <p className="font-bold text-sm text-ink leading-relaxed">
+                                  「{a.text}」
+                                </p>
+
+                                <p className="text-[11px] text-muted mt-1.5 font-medium">
+                                  {a.answerer}
+                                </p>
+
+                                {a.impression && (
+                                  <div className="mt-2 pt-2 border-t border-border flex items-start gap-1.5">
+                                    <Quote size={12} className="text-accent shrink-0 mt-0.5" />
+                                    <p className="text-xs text-muted italic leading-relaxed">
+                                      {a.impression}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {a.source !== 'answer' && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] text-accent font-bold mt-2.5">
+                                    <Share2 size={11} /> タップしてXに共有
+                                  </span>
+                                )}
+                              </button>
+                            </div>
+
+                            <div className="flex justify-end gap-1 mt-1.5 pt-1.5 border-t border-border">
+                              <button
+                                onClick={() => {
+                                  setAns({
+                                    answerer: a.answerer,
+                                    text: a.text,
+                                    impression: a.impression ?? '',
+                                  });
+
+                                  setEditingAnswer({
+                                    questionId: q.id,
+                                    answerId: a.id,
+                                  });
+                                }}
+                                className="text-faint hover:text-primary transition p-1"
+                                aria-label="回答を編集"
+                              >
+                                <Pencil size={14} />
+                              </button>
+
+                              <button
+                                onClick={() =>
+                                  setConfirm({ type: 'answer', id: a.id })
+                                }
+                                className="text-faint hover:text-error transition p-1"
+                                aria-label="回答を削除"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
                   </div>
