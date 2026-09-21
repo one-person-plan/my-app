@@ -1,0 +1,31 @@
+diff --git a/node_modules/@pantrist/capacitor-plugin-ml-kit-text-recognition/android/build.gradle b/node_modules/@pantrist/capacitor-plugin-ml-kit-text-recognition/android/build.gradle
+index 66bb330..98afd6c 100644
+--- a/node_modules/@pantrist/capacitor-plugin-ml-kit-text-recognition/android/build.gradle
++++ b/node_modules/@pantrist/capacitor-plugin-ml-kit-text-recognition/android/build.gradle
+@@ -68,5 +68,6 @@ dependencies {
+     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+     implementation "com.google.android.gms:play-services-mlkit-text-recognition:$mlkitTextRecognitionVersion"
++    implementation "com.google.mlkit:text-recognition-japanese:16.0.0"
+     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+ }
+diff --git a/node_modules/@pantrist/capacitor-plugin-ml-kit-text-recognition/android/src/main/java/com/pantrist/ml/CapacitorPluginMlKitTextRecognition.kt b/node_modules/@pantrist/capacitor-plugin-ml-kit-text-recognition/android/src/main/java/com/pantrist/ml/CapacitorPluginMlKitTextRecognition.kt
+index 066c5d5..f098ee9 100644
+--- a/node_modules/@pantrist/capacitor-plugin-ml-kit-text-recognition/android/src/main/java/com/pantrist/ml/CapacitorPluginMlKitTextRecognition.kt
++++ b/node_modules/@pantrist/capacitor-plugin-ml-kit-text-recognition/android/src/main/java/com/pantrist/ml/CapacitorPluginMlKitTextRecognition.kt
+@@ -10,13 +10,13 @@ import android.graphics.Rect
+ 
+ import com.google.mlkit.vision.common.InputImage
+ import com.google.mlkit.vision.text.TextRecognition
+-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
++import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
+ 
+ @CapacitorPlugin
+ class CapacitorPluginMlKitTextRecognition : Plugin() {
+   @PluginMethod
+   fun detectText(call: PluginCall) {
+-    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
++    val recognizer = TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
+ 
+     val encodedImage = call.getString("base64Image")
+     if (encodedImage == null) {

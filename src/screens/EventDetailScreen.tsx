@@ -26,6 +26,7 @@ import { TextField, TextArea, PrimaryButton, GhostButton } from '@/components/ui
 import type { OogiriQuestion, OogiriAnswer } from '@/data/types';
 import { loadTemplates, buildPostText, type Templates } from '@/lib/templates';
 import { TemplateSettingsSheet } from '@/components/TemplateSettings';
+import { CapacitorPluginMlKitTextRecognition } from '@pantrist/capacitor-plugin-ml-kit-text-recognition';
 
 export function EventDetailScreen({
   eventId,
@@ -49,6 +50,8 @@ export function EventDetailScreen({
   const [qSheet, setQSheet] = useState(false);
   const [qText, setQText] = useState('');
   const [qImage, setQImage] = useState<string | undefined>();
+  const [ocrEnabled, setOcrEnabled] = useState(false);
+  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
   const [editQuestionId, setEditQuestionId] = useState<string | null>(null);
   const [editQuestionText, setEditQuestionText] = useState('');
   const [editQuestionImage, setEditQuestionImage] = useState<string | undefined>();
@@ -145,13 +148,17 @@ export function EventDetailScreen({
       setEditQuestionImage(q.imageUrl);
     };
   
-  const submitQuestion = () => {
-    if (!qText.trim() && !qImage) return;
-    addQuestion(ev.id, qText.trim(), qImage);
-    setQText('');
-    setQImage(undefined);
-    setQSheet(false);
-  };
+    const submitQuestion = () => {
+      if (!qText.trim() && !qImage) return;
+    
+      addQuestion(ev.id, qText.trim(), qImage);
+    
+      setQText('');
+      setQImage(undefined);
+      setOcrEnabled(false);
+      setIsOcrProcessing(false);
+      setQSheet(false);
+    };
 
   const submitQuestionEdit = () => {
     if (!editQuestionId) return;
@@ -250,15 +257,47 @@ export function EventDetailScreen({
     });
   };
 
-  const onPickImage = (file: File) => {
-    compressImage(file)
-      .then((compressed) => {
-        setQImage(compressed);
-      })
-      .catch((error) => {
-        console.error('画像の圧縮に失敗しました:', error);
-        alert('画像の読み込みに失敗しました。');
-      });
+  const runOcr = async (image: string) => {
+    setIsOcrProcessing(true);
+  
+    try {
+      const base64Image = image.includes(',')
+      ? image.split(',')[1]
+      : image;
+
+      const result =
+        await CapacitorPluginMlKitTextRecognition.detectText({
+          base64Image,
+        });
+  
+      const recognizedText = result.text.trim();
+  
+      if (recognizedText) {
+        setQText(recognizedText);
+      } else {
+        alert('文字を読み取れませんでした。お題テキストを手入力してください。');
+      }
+    } catch (error) {
+      console.error('OCRに失敗しました:', error);
+      alert('文字の読み取りに失敗しました。お題テキストを手入力してください。');
+    } finally {
+      setIsOcrProcessing(false);
+    }
+  };
+
+  const onPickImage = async (file: File) => {
+    try {
+      const compressed = await compressImage(file);
+  
+      setQImage(compressed);
+  
+      if (ocrEnabled) {
+        await runOcr(compressed);
+      }
+    } catch (error) {
+      console.error('画像の圧縮に失敗しました:', error);
+      alert('画像の読み込みに失敗しました。');
+    }
   };
 
   const header = (
@@ -727,14 +766,52 @@ export function EventDetailScreen({
           <div>
             <span className="block text-xs font-bold text-muted mb-1.5 tracking-wide">お題画像（任意）</span>
             {qImage ? (
-              <div className="relative rounded-2xl overflow-hidden">
-                <img src={qImage} alt="プレビュー" className="w-full max-h-48 object-cover" />
-                <button
-                  onClick={() => setQImage(undefined)}
-                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-ink/60 text-white flex items-center justify-center"
-                >
-                  <X size={16} />
-                </button>
+              <div className="space-y-3">
+                <div className="relative rounded-2xl overflow-hidden">
+                  <img
+                    src={qImage}
+                    alt="プレビュー"
+                    className="w-full max-h-48 object-cover"
+                  />
+                  <button
+                    onClick={() => {
+                      setQImage(undefined);
+                      setOcrEnabled(false);
+                    }}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-ink/60 text-white flex items-center justify-center"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <label className="flex items-center gap-3 rounded-xl bg-surface-2 px-3.5 py-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={ocrEnabled}
+                    disabled={isOcrProcessing}
+                    onChange={async (e) => {
+                      const enabled = e.target.checked;
+                      setOcrEnabled(enabled);
+
+                      if (enabled) {
+                        await runOcr(qImage);
+                      }
+                    }}
+                    className="w-5 h-5 accent-primary"
+                  />
+
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-ink">
+                      画像から文字を読み取る
+                    </p>
+
+                    <p className="text-[11px] text-faint mt-0.5">
+                      {isOcrProcessing
+                        ? '文字を読み取っています…'
+                        : '画像のお題を自動でテキスト入力します'}
+                    </p>
+                  </div>
+                </label>
               </div>
             ) : (
               <label className="flex flex-col items-center justify-center gap-2 h-32 rounded-2xl border-2 border-dashed border-border-strong cursor-pointer hover:bg-surface-2 transition">
