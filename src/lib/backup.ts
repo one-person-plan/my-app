@@ -1,4 +1,6 @@
 import type { OogiriEvent } from '@/data/types';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
 const BACKUP_VERSION = 1;
 
@@ -27,6 +29,25 @@ export async function exportEvents(
     };
   
     const json = JSON.stringify(backup, null, 2);
+
+    // Capacitor AndroidではFilesystemを使って保存
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await Filesystem.writeFile({
+          path: 'oogiri-backup.json',
+          data: json,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8,
+        });
+
+        alert('バックアップを保存しました。');
+        return;
+      } catch (error) {
+        console.error('Androidでのバックアップ保存に失敗しました:', error);
+        alert('バックアップの保存に失敗しました。');
+        return;
+      }
+    }
   
     // ファイル保存APIに対応している場合
     if ('showSaveFilePicker' in window) {
